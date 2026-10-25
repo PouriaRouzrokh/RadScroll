@@ -17,7 +17,10 @@ AnkiMobile and AnkiDroid.
 - **Several series on one card**, and a clean stack on the front with its annotated twin on the back, scrolling in
   step.
 - **Plain Anki data.** Slices are ordinary media files; cards sync through AnkiWeb or your own sync server.
-- **No AI needed.** An optional tier lets you use your own AI key for a few extras.
+- **Any recorder, any format.** Mac, Windows, Linux or phone recordings (MP4, MOV, MKV, WebM, GIF…). The image area
+  is found and cropped automatically, with a small black margin.
+- **No AI needed.** Optionally, add your own AI key (OpenRouter, OpenAI, Gemini, Anthropic) or a local model
+  (Ollama) in RadScroll's settings for extras such as finding burned-in text.
 - **Privacy first.** Nothing leaves your computer unless you start it. Tools to mask patient details are built in.
 
 ## Licence

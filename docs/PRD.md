@@ -1,6 +1,6 @@
 # RadScroll - Product Requirements Document
 
-**Version:** 1.0
+**Version:** 1.1
 **Created:** 2026-10-25
 **Status:** Draft (discovery done; Phase 0 spikes next)
 **Owner:** Pouria Rouzrokh
@@ -129,7 +129,7 @@ Make every CT and MR series on an Anki card scroll like PACS, on every device, f
 
 ### Success Metrics
 
-- **Clip quality:** on a test set of ≥ 20 real recordings, ≥ 95 % of slices kept exactly once, no blurred frames
+- **Clip quality:** on a test set of ≥ 20 recordings covering the F4a recorder matrix, ≥ 95 % of slices kept exactly once, no blurred frames
   kept, no stray frames at the ends (the author's site pipeline already meets this on his clips).
 - **Speed:** a 30 s, 1080p recording becomes a stack in ≤ 30 s on a 2022 laptop; a 3-series Radiopaedia case in
   ≤ 60 s (most of it the polite crawl delay).
@@ -534,7 +534,7 @@ None: no accounts, no server. AI keys (F13) are the user's own, stored outside t
 AnkiDroid.
 
 ### Phase 1: Foundation (MVP, v1.0)
-**Goals:** F1–F11.
+**Goals:** F1–F11 (including F4a, any recorder / format, and F8, automatic crop).
 **Deliverables:**
 - The viewer moved here as the single source (with its tests), built to one file.
 - The board schema and fixtures.
