@@ -145,7 +145,7 @@ Make every CT and MR series on an Anki card scroll like PACS, on every device, f
 - **Phones:** the viewer passes the device checklist (scroll, pinch, pan, flick, double tap, full screen, paired
   scroll) on current AnkiMobile and AnkiDroid releases.
 - **Size:** a typical 3-series card ≤ 10 MB (WebP, ≤ 1024 px).
-- **Works for strangers (before the AnkiWeb listing):** ≥ 5 outside testers (residents or students, at least one each
+- **Works for strangers (private beta, before the one public release):** ≥ 5 private testers (residents or students, at least one each
   on Windows, macOS and Linux, at least one each on AnkiMobile and AnkiDroid) each make a card from their own
   material; median time from install to first scrolling card ≤ 10 min; no tester hits a crash or a silent empty
   stack; every failure they hit ends in a plain message they can act on.
