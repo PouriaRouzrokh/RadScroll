@@ -157,7 +157,9 @@ port must not carry over; the ones that matter for strangers are listed in §7.
 ## 4. The recorder matrix (the test set)
 
 Every clip shows public-domain, synthetic or licensed images (never patient data); the licence is recorded next
-to each file. Ground truth per clip: the number of distinct slices, their order, which frames are blurred or
+to each file. Sources: MedPix (public domain) and The Cancer Imaging Archive (CC BY) scrolled in Horos, 3D Slicer or
+Weasis for the recorder rows; Radiopaedia and Eurorad (CC BY-NC-SA, credited) for the browser-tab rows; synthetic
+phantoms for the ordering and transition rows. Ground truth per clip: the number of distinct slices, their order, which frames are blurred or
 stray, the true image box.
 
 | Recorder / source | Clips | What it stresses |

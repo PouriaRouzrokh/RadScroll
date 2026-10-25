@@ -86,11 +86,24 @@ No open-source tool makes stacks from clips or DICOM for Anki.
 - **Medical students on a radiology rotation**: start from Radiopaedia cases and shared decks.
 
 **Where most stacks will come from.** The author's own flow is PACS recordings, but for most users the safe and
-common sources are Radiopaedia cases, teaching sites, lecture videos and image sets from books or question banks:
-these carry no patient details and no institutional policy risk. PACS recordings are often against hospital policy
-and always carry patient details. The product therefore treats the Radiopaedia and image-set paths as the ones that
-must work for everyone from the first release, and the recording path as the power feature that must fail safely
-(a clear message, a manual crop, never a silent bad stack).
+common sources carry no patient details and no institutional policy risk. The product, its docs and its promotion
+name these, and never PACS:
+- **Radiopaedia cases the user has reviewed** (the import, F10, and recordings of its stack viewer; CC BY-NC-SA with
+  the credit). This is the headline source: "make Anki cards from the Radiopaedia cases you have reviewed".
+- **Open case collections with stack viewers:** Eurorad (CC BY-NC-SA), MedPix (US National Library of Medicine,
+  public domain), the RSNA Case Collection, journal supplements with cine.
+- **Open DICOM datasets** scrolled in any free viewer and recorded, or imported directly later (F12): The Cancer
+  Imaging Archive (mostly CC BY), IXI, OpenNeuro, 3D Slicer and OsiriX sample data. These are also the public test
+  fixtures (`PLAN.md` §4), since they can live in the repo with their licence.
+- **Teaching sites and board-review banks** the user already has access to (IMAIOS e-Anatomy, CTisus, STATdx and
+  RadPrimer cine, Core Radiology cases), for their own study, as a screenshot would be.
+- **Lectures:** conference recordings and teaching videos where the speaker scrolls a series.
+- **The user's department's teaching file**, the de-identified collection residents are expressly allowed to use.
+  This is how hospital material is mentioned: "your department's teaching file", never "your PACS".
+
+PACS recordings are often against hospital policy and always carry patient details; the tool handles them like any
+other recording but does not suggest them. The Radiopaedia and image-set paths must work for everyone; the recording
+path must fail safely (a clear message, a manual crop, never a silent bad stack).
 
 ### Secondary Users
 
@@ -754,7 +767,9 @@ block.
   form, "import a playlist you downloaded yourself" makes no request at all and becomes the primary path. (2) If the
   paste-a-link path stays, it behaves like one person browsing (one user-started case, ≥ 10 s between requests,
   cached, credit kept) and sits behind a config switch so a release can turn it off if Radiopaedia ever objects.
-  (3) It is listed as one intake among others, never the headline.
+  (3) In the docs and the promotion it is "make Anki cards from the Radiopaedia cases you have reviewed": the user
+  opens and reads the case, then chooses its series; the tool packages what they looked at and never fetches a case
+  they haven't seen. Said that way it can be the headline (Pouria, 2026-10-25: Radiopaedia matters most).
 - [x] Class names: keep `ra-board` / `ra-stack` / `data-ra-*` as they are. They are the contract with the author's
   cards and site; a second name would mean two code paths forever. (Decided 2026-10-25.)
 - [ ] An Android test device: the author has none. Borrow one, or use an emulator for the gesture suite and a real
