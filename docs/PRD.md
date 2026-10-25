@@ -668,7 +668,7 @@ version; a first look at the viewer inside a stranger-style note type on AnkiMob
 AnkiDroid; the recorder matrix started (synthetic or licensed images only).
 
 ### Phase 1: "Scroll" (viewer, template manager, image sets)
-**Goals:** F1, F2, F3, F4 (images), F9, F11, F17. The author's 400+ cards run on it; the first private testers try it.
+**Goals:** F1, F2, F3, F4 (images), F9, F11, F17. The author's 400+ cards run on it; the author tests it from scratch on Windows and Linux VMs.
 **Deliverables:** the viewer moved here as the single source (with its tests) and built to one file; the board
 schema and fixtures; the template manager with backup and byte-for-byte restore; Add stack for images; the
 privacy notice; diagnostics; CI building `.ankiaddon` on three platforms; the device checklist run on real phones.
@@ -676,14 +676,15 @@ privacy notice; diagnostics; CI building `.ankiaddon` on three platforms; the de
 ### Phase 2: "Record" (recordings)
 **Goals:** F4a, F5, F6, F7, F8 (manual always; automatic viewport only if it passes its bar).
 **Deliverables:** the ported pipeline on the chosen engine; the recorder-matrix test set and its measurements; the
-review strip; ≥ 5 private testers on their own recordings and their findings closed.
+review strip; the author's own fresh clips from recorders he doesn't normally use.
 
 ### Phase 3: "Import" (Radiopaedia)
 **Goals:** F10 behind the Radiopaedia go / no-go (their answer, their terms; a no cuts F10 from v1.0).
 **Deliverables:** the import with its politeness tests, on fixtures and a fake server.
 
 ### Phase 4: v1.0, the whole product, then the launch
-**Goals:** the complete product through a private beta; every gate re-run; then the one public release.
+**Goals:** the complete product through a private beta (the first time anyone outside sees it); every gate re-run;
+then the one public release.
 **Deliverables:** the "Prepare for sharing" basics from F15 that the masking tools need; docs site; the beta's fix
 rounds closed; AnkiWeb listing ("RadScroll: scrollable CT/MRI stacks from clips, images and Radiopaedia"), GitHub
 Release, a post on the author's blog, then r/Anki, r/medicalschoolanki and radiology subreddits (each sub's
@@ -786,4 +787,4 @@ PRD reuses).
 | 1.1 | 2026-10-25 | Pouria Rouzrokh (with Claude) | F4a any recorder / format; F8 automatic crop without AI (viewport by change, overlays by stillness); F13 AI settings, key storage, providers |
 | 1.2 | 2026-10-25 | Pouria Rouzrokh (with Claude) | F11 "not HIPAA compliant" disclaimer everywhere it matters; F13 cost shown before each call and in Settings → AI → Usage |
 | 1.3 | 2026-10-25 | Pouria Rouzrokh (with Claude) | Critical review: v1.0 in four steps; Radiopaedia and image sets as the paths that must work for everyone, PACS recordings as the power path; F8 manual crop guaranteed, automatic viewport only past a measured bar; F17 "runs on a stranger's machine" (compatibility matrix, diagnostics, fail-safe, coexistence); decoding candidate (d) from what Anki already ships (Qt FFmpeg backend, WebP plugin, mpv; found in 26.09.2); minimum Anki version as a spike; F1 host quirks (AnkiDroid new study screen, swipes); "works for strangers" metrics; Radiopaedia go / no-go; `ra-` names kept; the plan moved to `PLAN.md` |
-| 1.4 | 2026-10-25 | Pouria Rouzrokh (with Claude) | His review: one launch with everything in it, no public 0.x releases; the four steps become internal milestones with a private beta on the complete product before the single v1.0 release; "privacy guard" wording replaced by "masking tools" where it described the feature; licensing and politeness kept as the add-on's own obligations |
+| 1.4 | 2026-10-25 | Pouria Rouzrokh (with Claude) | His review: one launch with everything in it, no public 0.x releases; the four steps become internal milestones tested by the author alone, with a private beta on the complete product (the first thing anyone outside sees) before the single v1.0 release; "privacy guard" wording replaced by "masking tools" where it described the feature; licensing and politeness kept as the add-on's own obligations |

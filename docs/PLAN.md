@@ -9,8 +9,10 @@ living document: update it when a decision record changes a step.
 The one idea behind the order: **one launch, everything in it, nothing half-done** (Pouria, 2026-10-25: "I want
 everything to be ready before I launch; a solid product"). The work is still built in milestones, because each
 intake has its own engine, test set and failure modes, but the milestones are internal. Nothing is listed on
-AnkiWeb or announced until every v1.0 feature passes its gate and a private beta has used the whole product. Testers
-before launch get builds by hand, never a public release.
+AnkiWeb or announced until every v1.0 feature passes its gate and a private beta has used the whole product. **Nobody
+outside sees anything before the product is complete** (Pouria, 2026-10-25): milestones 1–3 are tested by the author
+alone, on his own devices and in CI; the private testers get the complete product at milestone 4, by hand, never as a
+public release.
 
 ---
 
@@ -34,10 +36,10 @@ diagnostics" in every bug report, byte-for-byte template restore, and a note nev
 
 ## 2. Milestones and gates
 
-Each milestone ends in an internal build (a tagged commit and a `.ankiaddon` from CI, shared only with the
-author and the private testers) and a **gate**: a short list of things that must be true, checked by someone
-other than the author where it says so. A milestone that misses its gate does not start the next one; it gets a
-fix round instead. The only public release is v1.0, after Gate 4.
+Each milestone ends in an internal build (a tagged commit and a `.ankiaddon` from CI, seen only by the author)
+and a **gate**: a short list of things that must be true, checked by the author on his own devices and by the
+test suites. A milestone that misses its gate does not start the next one; it gets a fix round instead. Private
+testers come in once, at milestone 4, with the complete product. The only public release is v1.0, after Gate 4.
 
 ### Milestone 0 — Spikes (decision records 0001–0004)
 
@@ -70,9 +72,10 @@ package (markers, scm unchanged, scheduling snapshot identical, restore byte-ide
 inside the markers, two card types, a note type with other scripts); schema fixtures shared with the author's
 site; the device checklist (§5) on real phones.
 
-**Gate 1:** the author's 400+ cards render and scroll under the add-on's block with no conversion; two private
-testers (one Windows, one macOS, one of them on AnkiDroid) each install the build by hand and make an image-set card
-in ≤ 10 min with no help; the device checklist passes; "Copy diagnostics" works; no open P0 issue.
+**Gate 1:** the author's 400+ cards render and scroll under the add-on's block with no conversion; the author
+installs the build from scratch on a Windows VM and a Linux VM, following only the README, and makes an image-set
+card on each in ≤ 10 min; the device checklist passes (his iPhone and iPad, the borrowed Android on both study
+screens); "Copy diagnostics" works; no open P0 issue.
 
 ### Milestone 2 — "Record": recordings
 
@@ -88,10 +91,10 @@ no blurred frame kept; no stray frame at the ends; the viewport box right or abs
 speed on the reference laptop; memory ceiling on a 3-minute clip; cancel mid-way leaves no temp files and no
 note change.
 
-**Gate 2:** ≥ 5 private testers across the three platforms and both phones; each makes a card from their
-own recording; every clip they send that fails is added to the matrix and fixed or given a plain message; median
-install-to-first-stack ≤ 10 min; no crash; no silent empty stack; the automatic viewport shipped only with its
-measurement in a decision record.
+**Gate 2:** every clip in the recorder matrix (§4) gives the right slices on all three platforms, or a plain
+message; the author records three fresh clips with recorders he does not normally use (Windows Snipping Tool, OBS,
+his phone) and each becomes a stack in ≤ 10 min from install; no crash; no silent empty stack; the automatic
+viewport shipped only with its measurement in a decision record.
 
 ### Milestone 3 — "Import": Radiopaedia
 
@@ -107,7 +110,9 @@ the gap and the stop; a front-leak check (the case title's words must not appear
 the credit present whenever any Radiopaedia content is on the card, boards or not.
 
 **Gate 3:** a fake Radiopaedia server proves the gap, the stop and the cache; the front-leak check passes on
-every fixture case; the credit is present on every fixture card; private testers import three cases each.
+every fixture case; the credit is present on every fixture card; the author imports five cases of different
+shapes (CT, MRI with many series, radiographs, a case with no annotated study, a long follow-up case) on all three
+platforms.
 
 ### Milestone 4 — v1.0: the whole product, then the launch
 
@@ -195,7 +200,7 @@ an iPhone and an iPad; AnkiDroid on a phone with the old and with the new study 
 
 - **Who:** 5–10 residents and students found through the author's network (not a public call, since nothing is
   announced before launch); at least one each on Windows, macOS, Linux, AnkiMobile and AnkiDroid; none who know
-  the author's site. Two of them start at Gate 1, the rest at Gate 2; all of them run the full product at Milestone 4.
+  the author's site. **They start at milestone 4, with the complete product**, and never see an earlier build.
 - **What they do:** a one-page script: install the build they were sent, enable stacks on a note type they
   already use (or create the RadScroll Case type), make one card from images, one from their own recording and
   one from a Radiopaedia case, review them on their phone, run Remove. They time the first card.
