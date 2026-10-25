@@ -198,9 +198,35 @@ sync), keeps it current, and takes it out cleanly.
 **Description:** A button and drop target in Anki's editor: a recording, several images, or a Radiopaedia link
 (DICOM in F12) → the review strip (F5) → a board inserted in the current field.
 **Acceptance Criteria:**
-- [ ] Accepts `.mov`, `.mp4`, `.webm`, `.gif` (≤ 3 min, ≤ 300 MB) and PNG / JPEG / WebP image sets (by name order).
+- [ ] Accepts recordings from any common recorder and format (see F4a), ≤ 3 min and ≤ 300 MB by default
+  (configurable), and PNG / JPEG / WebP / BMP / TIFF image sets (in natural name order: `img2` before `img10`).
 - [ ] Several images: "One stack", "Side by side" or "Separate" with a suggestion.
 - [ ] Inserting into a field that already has a board adds to that board (one board per field).
+
+#### F4a: Any recorder, any format
+**Priority:** P0
+**Description:** People record with whatever they have. The pipeline must not assume the author's macOS
+⌘⇧5 recordings.
+**User Story:** As a resident on Windows, I want my Snipping Tool (or OBS, or phone) recording to work exactly like a
+Mac recording so that I don't have to convert anything.
+**Acceptance Criteria:**
+- [ ] **Containers / codecs:** MP4, MOV, MKV, WebM, AVI, M4V; H.264, HEVC / H.265 (iPhone and many Mac recordings),
+  VP8, VP9, AV1, MJPEG, ProRes; animated GIF, animated WebP and APNG. Anything the engine can't decode fails with a
+  plain message naming the codec, never a silent empty stack.
+- [ ] **Recorder matrix in the test set** (≥ 2 clips each): macOS Screenshot (⌘⇧5) and QuickTime, Windows
+  Snipping Tool and Xbox Game Bar, OBS (constant 30 / 60 fps, so each slice is many identical frames), Loom,
+  ShareX (MP4 and GIF), GNOME / KDE recorders, iOS and Android screen recordings (portrait, HEVC, notch and status
+  bar), Zoom / Teams lecture recordings, a PACS cine export.
+- [ ] **Frame rate:** variable and constant frame rates both work; duplicate frames from constant-rate recorders
+  collapse into one run.
+- [ ] **Compression noise:** the "same slice / new slice" cut adapts to each clip (it measures the clip's own
+  noise floor between identical frames) instead of a fixed 1 %, so heavily compressed or low-bitrate recordings
+  (Loom, Teams, phone) don't split one slice into many or merge two.
+- [ ] **Screen size and scaling:** HiDPI / Retina, odd sizes, rotation metadata (phone recordings) and letterboxing
+  handled; slices keep their true aspect ratio.
+- [ ] **Recorder overlays:** the cursor, click highlights, the macOS selection outline, recording timers and
+  "recording" badges are ignored or removed (they change little and sit at fixed places).
+- [ ] **Orientation within the clip:** a series scrolled down, up, or back and forth comes out once, in order.
 
 #### F5: Review strip
 **Priority:** P0
@@ -237,12 +263,29 @@ sync), keeps it current, and takes it out cleanly.
 - [ ] Recordings and Radiopaedia (no positions in the data): the recorded / uploader's order, Reverse in the review
   strip; a pixel heuristic only if it measures ≥ 95 % right on a test set; the AI check (F13) when enabled.
 
-#### F8: A small black margin
+#### F8: Automatic crop, no AI
 **Priority:** P0
+**Description:** People record the whole screen, a window, or a rough selection. The stack should hold only the
+image, with a small black margin, found by image processing alone. One crop box applies to the whole stack.
 **Acceptance Criteria:**
-- [ ] Plain black padding is trimmed to ≈ 4 % of the longer side (≥ 8 px), one box for the whole stack (the union
-  of every slice's content), so scrolling never jumps and marks / pairing maps stay valid.
-- [ ] Anatomy, faint skin, the CT table, labels and overlays are never cut; content touching an edge keeps it.
+- [ ] **The image area, found by what changes.** Across a scrolled series the image changes from slice to slice
+  while the PACS / browser / lecture-slide interface around it stays still. The per-pixel change across the whole
+  clip marks the image viewport; the crop box is its bounding rectangle, snapped to the viewport's straight edges.
+  Works for a full-screen recording of a PACS window, a browser tab, or a slide with a video in it.
+- [ ] **Several viewports** (a 2×2 PACS layout where only one pane scrolls; side-by-side series) → the pane that
+  changes is kept; if two change in step, the user is asked which (or "keep both as two stacks").
+- [ ] **Plain black padding** inside the viewport is trimmed to ≈ 4 % of the longer side (≥ 8 px), one box for
+  the whole stack (the union of every slice's content), so scrolling never jumps and marks / pairing maps stay
+  valid.
+- [ ] **Never cut anatomy:** faint skin, the CT table, and anything that changes between slices stay inside the
+  box; content touching an edge keeps that edge.
+- [ ] **Overlays found without AI:** inside the viewport, small non-black regions that stay identical on every
+  slice while the image around them changes (corner text such as name / MRN / date, W/L, scale bars, the PACS
+  logo) are listed as overlay candidates, highlighted in the review strip, with one click to mask them (black box
+  on every slice). Text that changes per slice (the slice number) is found by its position in a corner and its
+  small size, and offered the same way. Masking is offered, never forced.
+- [ ] **Manual override:** drag the crop box or a mask in the review strip; the same box applies to every slice.
+- [ ] Optional AI help for what pixel rules can't judge is in F13 ("find text and non-image elements").
 
 #### F9: Layout
 **Priority:** P0
@@ -287,9 +330,41 @@ decoders allow. Burned-in-annotation and private tags warned about; no DICOM fil
 
 #### F13: AI tier (own key)
 **Target Version:** v1.2
-**Description:** OpenRouter, Gemini, OpenAI or a local Ollama model, the user's key, off by default: orientation
-check, key slice, series label, "find burned-in text" before sharing, a card draft from a pasted report.
-Frames are sent only after the privacy guard, and the dialog says what will be sent.
+**Description:** Optional help from a vision model, with the user's own key or a local model. Off until the user
+sets it up. Never needed for a usable stack.
+
+**What it can do** (each a button in the review strip or the import dialog, never automatic until the user turns
+that task on):
+- **Find text and non-image elements** the pixel rules (F8) missed or can't judge: burned-in patient details,
+  annotations, slide text, logos, a picture-in-picture webcam. Returns boxes; the user sees them and masks with one
+  click. It never edits anatomy.
+- **Check slice order** (head vs feet) when the data has no positions.
+- **Pick a key slice** and **name the series** ("Axial CT, soft-tissue window").
+- **Draft the card text** from a pasted report or the Radiopaedia findings (question, answer, key findings), shown
+  as a suggestion to accept or edit.
+
+**Where users set it up: RadScroll → Settings → AI** (menu Tools → RadScroll → Settings…, also a ⚙ button in the
+review strip). A small Qt dialog, not Anki's raw JSON config editor (which would show keys in plain text):
+- **Provider:** OpenRouter (one key, many models), OpenAI, Google Gemini, Anthropic, **Ollama / LM Studio (local,
+  no key, nothing leaves the computer)**, or "Custom, OpenAI-compatible" (base URL + key) for anything else.
+- **API key:** a masked field with **Test connection**. Stored in the operating system's keychain (macOS
+  Keychain, Windows Credential Manager, Linux Secret Service, via the pure-Python `keyring` package if it can be
+  bundled; otherwise a file in the add-on's `user_files/` folder with owner-only permissions). **Never** in the
+  collection, a note, the synced add-on config, or a log, so it never reaches AnkiWeb, shared decks or GitHub
+  issues.
+- **Model per task:** a vision model for the image tasks, a text model for drafting; sensible defaults per provider
+  (cheap fast models), editable, with a "list models" button where the provider supports it.
+- **Tasks on / off:** which buttons appear, and which (if any) run automatically after an import.
+- **Privacy:** "Send frames only after masking" (on by default); "Show me exactly what will be sent" (on by
+  default: thumbnails + text before the first call of each session); a reminder that cloud providers must not get
+  patient data the user isn't allowed to share; a local model recommended for PACS recordings.
+- **Cost:** an estimate before each call (from the provider's prices or the response's usage), a running total, and
+  an optional monthly cap after which calls ask first.
+
+**Implementation Notes:** one small HTTP client (standard library, no provider SDKs) speaking the
+OpenAI-compatible chat format, which OpenRouter, OpenAI, Gemini, Ollama and LM Studio all accept, plus Anthropic's
+own format; images sent downscaled (≤ 512 px) and only the slices a task needs (first / middle / last for order,
+an overview sheet for key slice). Calls run off the UI thread with a timeout; a failure leaves the stack unchanged.
 
 #### F14: Annotated twins and marks
 **Target Version:** v1.2
@@ -352,7 +427,9 @@ Shared with the author's site: viewer (TS) · board schema + fixtures · pipelin
      codecs, so WebCodecs H.264 support in Anki's build must be tested; ffmpeg.wasm decodes in software.
    - (b) Python with per-platform numpy and an ffmpeg binary downloaded on first use (checksum-verified).
    - (c) A hybrid: ffmpeg for decoding, pixel work in TypeScript.
-   (a) also enables F16. Decide with a 30 s 1080p test clip on macOS, Windows and Linux.
+   (a) also enables F16. Decide with the F4a recorder matrix (H.264, HEVC, VP9, AV1, GIF, constant and variable
+   frame rate) on macOS, Windows and Linux: an engine that can't decode HEVC phone recordings or VP9 / AV1 web
+   recordings on all three is out, or needs a fallback. Mind codec licensing when bundling decoders.
 3. **Image I/O without compiled dependencies:** Qt's image plugins (WebP) via the bundled PyQt6, or the web view's
    canvas; Pillow only if bundled.
 
@@ -486,6 +563,9 @@ AnkiDroid.
 | Anki updates change hooks, packaging or what templates may do | High | Medium | Minimum / maximum Anki versions in the manifest; CI against the latest beta; DOM-only viewer |
 | Compiled dependencies can't be bundled cleanly | High | Medium | Phase 0 spike; prefer TS / WASM or Qt-only paths |
 | PHI ends up in shared decks or AI requests | High | Medium | Privacy guard, AI off by default, sharing check, clear docs |
+| Recordings from other tools break the pipeline (codecs, constant frame rate, compression noise, full-screen UI) | High | High | F4a recorder matrix in the test set from Phase 0; adaptive thresholds; viewport detection (F8) |
+| An API key leaks (synced config, logs, screenshots in issues) | High | Low | OS keychain or owner-only file outside the collection; masked field; keys never logged |
+| An AI provider changes its API or prices | Low | Medium | OpenAI-compatible client; custom base URL; models editable |
 | Radiopaedia blocks or objects | Medium | Low | Polite fetching, credit, non-commercial; ask Radiopaedia before launch; the feature can be switched off |
 | Large media slows sync | Medium | Medium | WebP, ≤ 1024 px, budgets, content-addressed reuse |
 | New AnkiWeb account can't upload yet | Low | Low | The author's existing account; GitHub Releases meanwhile |
@@ -526,7 +606,11 @@ AnkiDroid.
 - [ ] Keep the `ra-board` / `ra-stack` class names publicly, or add `rs-*` names with `ra-*` still read?
 - [ ] Domain: `radscroll.org` / `radscroll.app` (look unregistered), or a subdomain of the author's site.
 - [ ] Relation to the author's possible startup idea (Mnemoscope): stays separate for now.
-- [ ] Which AI providers to support first (F13).
+- [ ] Which AI providers to support first (F13), and whether `keyring` can be bundled on all three platforms.
+- [ ] Whether a local OCR (no AI) is worth bundling for overlay text, or the static-region rule (F8) plus the
+  optional AI task is enough.
+- [ ] Collecting the F4a recorder matrix: clips of public or synthetic images only (e.g. Radiopaedia cases under
+  their licence, phantom scans), recorded with each tool.
 
 ---
 
@@ -552,3 +636,4 @@ PRD reuses).
 | Version | Date | Author | Changes |
 |---|---|---|---|
 | 1.0 | 2026-10-25 | Pouria Rouzrokh (with Claude) | Initial draft from the brainstorm |
+| 1.1 | 2026-10-25 | Pouria Rouzrokh (with Claude) | F4a any recorder / format; F8 automatic crop without AI (viewport by change, overlays by stillness); F13 AI settings, key storage, providers |
