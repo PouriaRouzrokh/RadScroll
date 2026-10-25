@@ -50,12 +50,12 @@ testers come in once, at milestone 4, with the complete product. The only public
 | 3 | Image I/O | `QImage` WebP read / write (quality, grayscale, size) on all three platforms; TIFF, BMP, HEIC readers present? | `0003-image-io.md` |
 | 4 | Minimum Anki version | Run the M1 prototype on the last three releases and the oldest with Qt ≥ 6.5; set `min_point_version` to the oldest that passes | `0004-minimum-anki.md` |
 
-Also in Step 0: write to Radiopaedia (terms, politeness, the credit format, a heads-up that an add-on will do
-one-case-at-a-time imports); borrow or buy an Android test device; set up a Windows and a Linux VM; start the
+Also in Milestone 0: try Radiopaedia's playlist download as the no-network import path (PRD open questions);
+borrow or buy an Android test device; set up a Windows and a Linux VM; start the
 recorder matrix with licensed images only.
 
 **Gate 0:** four records with numbers; an engine that decodes every row of the matrix on all three platforms (or a
-named fallback per failing row); Radiopaedia asked.
+named fallback per failing row); the Radiopaedia import path chosen (playlist file, link fetch behind a switch, or both).
 
 ### Milestone 1 — "Scroll": viewer, template manager, image sets
 
@@ -98,8 +98,8 @@ viewport shipped only with its measurement in a decision record.
 
 ### Milestone 3 — "Import": Radiopaedia
 
-Delivers (only with Radiopaedia's answer in hand; if the answer is no, F10 is cut from v1.0 and the launch goes
-ahead without it): paste a case link → choose series → a filled note; politeness
+Delivers: the import by the path chosen at Gate 0 (a downloaded playlist, and / or paste a case link behind a
+config switch) → choose series → a filled note; politeness
 (robots.txt read and honoured, one request at a time, ≥ 10 s apart, `Retry-After`, stop for hours on 403 / 429 /
 503 / a challenge, a bounded cache, an honest User-Agent naming the add-on and its repo); the credit with the
 licence on the back; nothing naming the case on the front; the stray-picture rule with Restore; a first-use

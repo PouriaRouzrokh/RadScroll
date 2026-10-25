@@ -16,7 +16,8 @@ this repository is public.
 
 Planning (PRD v1.4, plan v1.1, 2026-10-25). One launch, everything in it; no public 0.x releases. Next: Phase 0 spikes (viewer delivery on AnkiMobile and AnkiDroid, the
 decoding engine with what Anki already ships first, image I/O, the minimum Anki version), each ending in a short
-decision record under `docs/decisions/`; and Radiopaedia asked in writing before F10 is built.
+decision record under `docs/decisions/`. No outreach to Radiopaedia: the playlist download is tried first, the
+link import stays behind a switch.
 
 ## Rules
 

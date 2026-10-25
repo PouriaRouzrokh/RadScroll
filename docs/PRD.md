@@ -679,7 +679,7 @@ privacy notice; diagnostics; CI building `.ankiaddon` on three platforms; the de
 review strip; the author's own fresh clips from recorders he doesn't normally use.
 
 ### Phase 3: "Import" (Radiopaedia)
-**Goals:** F10 behind the Radiopaedia go / no-go (their answer, their terms; a no cuts F10 from v1.0).
+**Goals:** F10 by the path chosen in Phase 0 (playlist download first; the link import behind a switch).
 **Deliverables:** the import with its politeness tests, on fixtures and a fake server.
 
 ### Phase 4: v1.0, the whole product, then the launch
@@ -748,11 +748,13 @@ block.
 - [ ] Radiopaedia's Terms of Use on automated downloading. The content licence (CC BY-NC-SA 3.0, checked
   2026-10-25) allows non-commercial study use with their credit format, so the cards are fine. The Terms separately
   forbid access "by any automated or systematic means" and say there is no API for downloading cases; one
-  user-started case at a time is polite and not bulk, but it is still code fetching pages. **Decision: ask Radiopaedia
-  in writing during Phase 0; F10 ships only with their answer in hand** (one message; a no cuts F10 from v1.0).
-  **Try first in Phase 0:** their "download playlist" feature, which the Terms sanction "for teaching or personal
-  study". If that download holds the slices in a readable form, "import a playlist you downloaded yourself" needs no
-  network and no permission, and could replace or precede the link import.
+  user-started case at a time is polite and not bulk, but it is still code fetching pages. **Decision (Pouria,
+  2026-10-25): no outreach; remove the risk by design instead.** (1) Try first in Phase 0 their "download playlist"
+  feature, which the Terms sanction "for teaching or personal study": if that download holds the slices in a readable
+  form, "import a playlist you downloaded yourself" makes no request at all and becomes the primary path. (2) If the
+  paste-a-link path stays, it behaves like one person browsing (one user-started case, ≥ 10 s between requests,
+  cached, credit kept) and sits behind a config switch so a release can turn it off if Radiopaedia ever objects.
+  (3) It is listed as one intake among others, never the headline.
 - [x] Class names: keep `ra-board` / `ra-stack` / `data-ra-*` as they are. They are the contract with the author's
   cards and site; a second name would mean two code paths forever. (Decided 2026-10-25.)
 - [ ] An Android test device: the author has none. Borrow one, or use an emulator for the gesture suite and a real
@@ -792,5 +794,5 @@ PRD reuses).
 | 1.0 | 2026-10-25 | Pouria Rouzrokh (with Claude) | Initial draft from the brainstorm |
 | 1.1 | 2026-10-25 | Pouria Rouzrokh (with Claude) | F4a any recorder / format; F8 automatic crop without AI (viewport by change, overlays by stillness); F13 AI settings, key storage, providers |
 | 1.2 | 2026-10-25 | Pouria Rouzrokh (with Claude) | F11 "not HIPAA compliant" disclaimer everywhere it matters; F13 cost shown before each call and in Settings → AI → Usage |
-| 1.3 | 2026-10-25 | Pouria Rouzrokh (with Claude) | Critical review: v1.0 in four steps; Radiopaedia and image sets as the paths that must work for everyone, PACS recordings as the power path; F8 manual crop guaranteed, automatic viewport only past a measured bar; F17 "runs on a stranger's machine" (compatibility matrix, diagnostics, fail-safe, coexistence); decoding candidate (d) from what Anki already ships (Qt FFmpeg backend, WebP plugin, mpv; found in 26.09.2); minimum Anki version as a spike; F1 host quirks (AnkiDroid new study screen, swipes); "works for strangers" metrics; Radiopaedia go / no-go; `ra-` names kept; the plan moved to `PLAN.md` |
-| 1.4 | 2026-10-25 | Pouria Rouzrokh (with Claude) | His review: one launch with everything in it, no public 0.x releases; the four steps become internal milestones tested by the author alone, with a private beta on the complete product (the first thing anyone outside sees) before the single v1.0 release; "privacy guard" wording replaced by "masking tools" where it described the feature; licensing and politeness kept as the add-on's own obligations |
+| 1.3 | 2026-10-25 | Pouria Rouzrokh (with Claude) | Critical review: v1.0 in four steps; Radiopaedia and image sets as the paths that must work for everyone, PACS recordings as the power path; F8 manual crop guaranteed, automatic viewport only past a measured bar; F17 "runs on a stranger's machine" (compatibility matrix, diagnostics, fail-safe, coexistence); decoding candidate (d) from what Anki already ships (Qt FFmpeg backend, WebP plugin, mpv; found in 26.09.2); minimum Anki version as a spike; F1 host quirks (AnkiDroid new study screen, swipes); "works for strangers" metrics; Radiopaedia go / no-go (dropped in 1.4); `ra-` names kept; the plan moved to `PLAN.md` |
+| 1.4 | 2026-10-25 | Pouria Rouzrokh (with Claude) | His review: one launch with everything in it, no public 0.x releases; the four steps become internal milestones tested by the author alone, with a private beta on the complete product (the first thing anyone outside sees) before the single v1.0 release; "privacy guard" wording replaced by "masking tools" where it described the feature; licensing and politeness kept as the add-on's own obligations; no outreach to Radiopaedia: the playlist download tried first, the link import behind a switch |
