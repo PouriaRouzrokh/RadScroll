@@ -1,6 +1,6 @@
 # RadScroll - Product Requirements Document
 
-**Version:** 1.3
+**Version:** 1.4
 **Created:** 2026-10-25
 **Status:** Draft (discovery done; Phase 0 spikes next; the build and evaluation plan is [`PLAN.md`](PLAN.md))
 **Owner:** Pouria Rouzrokh
@@ -162,10 +162,11 @@ Make every CT and MR series on an Anki card scroll like PACS, on every device, f
 
 ### MVP Features (v1.0)
 
-v1.0 is reached in four public steps, each usable on its own and each tested by outsiders before the next
-(`PLAN.md`): **0.1** viewer + template manager + image sets (F1, F2, F3, F4 images, F9, F11, F17); **0.2** recordings
-(F4a, F5, F6, F7, F8); **0.3** Radiopaedia (F10, if Radiopaedia agrees); **1.0** polish and the AnkiWeb listing.
-Priorities below are for v1.0 as a whole; the step each feature ships in is in `PLAN.md`.
+v1.0 is **one launch with everything below in it** (Pouria, 2026-10-25: "I want everything to be ready before I
+launch; a solid product"). It is built in four internal milestones (`PLAN.md`): viewer + template manager + image
+sets (F1, F2, F3, F4 images, F9, F11, F17); recordings (F4a, F5, F6, F7, F8); Radiopaedia (F10, if Radiopaedia
+agrees; otherwise cut from v1.0); then the whole product through a private beta. Nothing is listed on AnkiWeb or
+announced before the last gate.
 
 #### F1: The stack viewer
 **Priority:** P0
@@ -312,7 +313,7 @@ chosen frames (by frame index) and crops in the decoder, so its cost grows with 
   strip; a pixel heuristic only if it measures ≥ 95 % right on a test set; the AI check (F13) when enabled.
 
 #### F8: Crop and mask (manual always, automatic when it is sure)
-**Priority:** P0 for the manual crop box, the margin rule and the mask tool; P1 (best effort, 0.2) for the automatic
+**Priority:** P0 for the manual crop box, the margin rule and the mask tool; P1 (best effort, milestone 2) for the automatic
 viewport; v1.1 for overlay candidates.
 **Description:** People record the whole screen, a window, or a rough selection. The stack should hold only the
 image, with a small black margin. One crop box applies to the whole stack. The guaranteed path is a crop box the
@@ -366,7 +367,7 @@ A wrong automatic box is worse than none, so when the rules aren't sure the stri
   the front names the case (its address and title contain the diagnosis).
 - [ ] A first-use notice: personal, non-commercial study (CC BY-NC-SA); Radiopaedia may limit heavy use.
 
-#### F11: Privacy guard and the "not HIPAA compliant" disclaimer
+#### F11: Masking tools and the "not HIPAA compliant" disclaimer
 **Priority:** P0
 **Description:** RadScroll is a study tool. It is **not HIPAA compliant**, not a de-identification tool, and makes
 no compliance claim of any kind (HIPAA, GDPR or any institution's policy). Masking and cropping help; they do not
@@ -657,8 +658,8 @@ None: no accounts, no server. AI keys (F13) are the user's own, stored outside t
 
 ## Development Phases
 
-The detailed plan, with what each step delivers, how it is tested and the go / no-go gate at its end, is
-[`PLAN.md`](PLAN.md). In short:
+The detailed plan, with what each milestone delivers, how it is tested and the gate at its end, is
+[`PLAN.md`](PLAN.md). The milestones are internal: one public release, v1.0, after the last gate. In short:
 
 ### Phase 0: Spikes (1–2 sessions)
 **Goals:** settle viewer delivery, the decoding engine (candidate (d) first), image I/O and the minimum Anki
@@ -666,25 +667,29 @@ version; a first look at the viewer inside a stranger-style note type on AnkiMob
 **Deliverables:** a short decision record each, with measurements on macOS / Windows / Linux and AnkiMobile /
 AnkiDroid; the recorder matrix started (synthetic or licensed images only).
 
-### Phase 1: v0.1 "Scroll" (viewer, template manager, image sets)
-**Goals:** F1, F2, F3, F4 (images), F9, F11, F17. The author's 400+ cards run on it; the first outside testers try it.
+### Phase 1: "Scroll" (viewer, template manager, image sets)
+**Goals:** F1, F2, F3, F4 (images), F9, F11, F17. The author's 400+ cards run on it; the first private testers try it.
 **Deliverables:** the viewer moved here as the single source (with its tests) and built to one file; the board
 schema and fixtures; the template manager with backup and byte-for-byte restore; Add stack for images; the
 privacy notice; diagnostics; CI building `.ankiaddon` on three platforms; the device checklist run on real phones.
 
-### Phase 2: v0.2 "Record" (recordings)
+### Phase 2: "Record" (recordings)
 **Goals:** F4a, F5, F6, F7, F8 (manual always; automatic viewport only if it passes its bar).
 **Deliverables:** the ported pipeline on the chosen engine; the recorder-matrix test set and its measurements; the
-review strip; the beta with ≥ 5 outside testers and their findings closed.
+review strip; ≥ 5 private testers on their own recordings and their findings closed.
 
-### Phase 3: v0.3 "Import" (Radiopaedia), then v1.0
-**Goals:** F10 behind the Radiopaedia go / no-go (their answer, their terms); polish; the AnkiWeb listing.
-**Deliverables:** the import with its politeness tests; the "Prepare for sharing" basics from F15 that the privacy
-guard needs; docs site; AnkiWeb listing ("RadScroll: scrollable CT/MRI stacks from clips, images and Radiopaedia"),
-GitHub Release, a post on the author's blog, then r/Anki, r/medicalschoolanki and radiology subreddits (each sub's
+### Phase 3: "Import" (Radiopaedia)
+**Goals:** F10 behind the Radiopaedia go / no-go (their answer, their terms; a no cuts F10 from v1.0).
+**Deliverables:** the import with its politeness tests, on fixtures and a fake server.
+
+### Phase 4: v1.0, the whole product, then the launch
+**Goals:** the complete product through a private beta; every gate re-run; then the one public release.
+**Deliverables:** the "Prepare for sharing" basics from F15 that the masking tools need; docs site; the beta's fix
+rounds closed; AnkiWeb listing ("RadScroll: scrollable CT/MRI stacks from clips, images and Radiopaedia"), GitHub
+Release, a post on the author's blog, then r/Anki, r/medicalschoolanki and radiology subreddits (each sub's
 self-promotion rules first), and an Anki Forums support thread.
 
-### Phase 4: Enhancement (v1.1–v1.3) and convergence
+### Phase 5: Enhancement (v1.1–v1.3) and convergence
 **Goals:** DICOM (F12), the AI tier (F13), twins and marks (F14), the rest of sharing polish (F15). The author's
 site consumes RadScroll's viewer, schema and pipelines; the author switches his own cards to RadScroll's template
 block.
@@ -698,7 +703,7 @@ block.
 | AnkiMobile / AnkiDroid web-view quirks break gestures | High | Medium | Device checklist before every release; inline viewer block; no reliance on external scripts |
 | Anki updates change hooks, packaging or what templates may do | High | Medium | Minimum / maximum Anki versions in the manifest; CI against the latest beta; DOM-only viewer |
 | Compiled dependencies can't be bundled cleanly | High | Medium | Phase 0 spike; prefer TS / WASM or Qt-only paths |
-| PHI ends up in shared decks or AI requests | High | Medium | Privacy guard, AI off by default, sharing check, clear docs |
+| PHI ends up in shared decks or AI requests | High | Medium | Masking tools with the disclaimer beside them, AI off by default, sharing check, clear docs that name permitted material only |
 | Recordings from other tools break the pipeline (codecs, constant frame rate, compression noise, full-screen UI) | High | High | F4a recorder matrix in the test set from Phase 0; adaptive thresholds; viewport detection (F8) |
 | An API key leaks (synced config, logs, screenshots in issues) | High | Low | OS keychain or owner-only file outside the collection; masked field; keys never logged |
 | An AI provider changes its API or prices | Low | Medium | OpenAI-compatible client; custom base URL; models editable |
@@ -780,4 +785,5 @@ PRD reuses).
 | 1.0 | 2026-10-25 | Pouria Rouzrokh (with Claude) | Initial draft from the brainstorm |
 | 1.1 | 2026-10-25 | Pouria Rouzrokh (with Claude) | F4a any recorder / format; F8 automatic crop without AI (viewport by change, overlays by stillness); F13 AI settings, key storage, providers |
 | 1.2 | 2026-10-25 | Pouria Rouzrokh (with Claude) | F11 "not HIPAA compliant" disclaimer everywhere it matters; F13 cost shown before each call and in Settings → AI → Usage |
-| 1.3 | 2026-10-25 | Pouria Rouzrokh (with Claude) | Critical review: v1.0 in four public steps (0.1 scroll, 0.2 record, 0.3 import, 1.0); Radiopaedia and image sets as the paths that must work for everyone, PACS recordings as the power path; F8 manual crop guaranteed, automatic viewport only past a measured bar; F17 "runs on a stranger's machine" (compatibility matrix, diagnostics, fail-safe, coexistence); decoding candidate (d) from what Anki already ships (Qt FFmpeg backend, WebP plugin, mpv; found in 26.09.2); minimum Anki version as a spike; F1 host quirks (AnkiDroid new study screen, swipes); "works for strangers" metrics; Radiopaedia go / no-go; `ra-` names kept; the plan moved to `PLAN.md` |
+| 1.3 | 2026-10-25 | Pouria Rouzrokh (with Claude) | Critical review: v1.0 in four steps; Radiopaedia and image sets as the paths that must work for everyone, PACS recordings as the power path; F8 manual crop guaranteed, automatic viewport only past a measured bar; F17 "runs on a stranger's machine" (compatibility matrix, diagnostics, fail-safe, coexistence); decoding candidate (d) from what Anki already ships (Qt FFmpeg backend, WebP plugin, mpv; found in 26.09.2); minimum Anki version as a spike; F1 host quirks (AnkiDroid new study screen, swipes); "works for strangers" metrics; Radiopaedia go / no-go; `ra-` names kept; the plan moved to `PLAN.md` |
+| 1.4 | 2026-10-25 | Pouria Rouzrokh (with Claude) | His review: one launch with everything in it, no public 0.x releases; the four steps become internal milestones with a private beta on the complete product before the single v1.0 release; "privacy guard" wording replaced by "masking tools" where it described the feature; licensing and politeness kept as the add-on's own obligations |

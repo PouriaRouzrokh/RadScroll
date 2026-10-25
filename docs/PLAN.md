@@ -1,14 +1,16 @@
 # RadScroll — build and evaluation plan
 
-**Version:** 1.0 · **Date:** 2026-10-25 · **Goes with:** [`PRD.md`](PRD.md) v1.3
+**Version:** 1.1 · **Date:** 2026-10-25 · **Goes with:** [`PRD.md`](PRD.md) v1.4
 
 This is the plan for turning the PRD into a tool that works for people the author will never meet. It says what
 each step delivers, how it is tested, who tests it, and what must be true before the next step starts. It is a
 living document: update it when a decision record changes a step.
 
-The one idea behind the order: **ship the part that works for everyone first** (the viewer and image sets, which
-have no recorder, no codec and no patient-data problem), get outsiders on it early, and add the harder intakes
-one at a time with their own measurements.
+The one idea behind the order: **one launch, everything in it, nothing half-done** (Pouria, 2026-10-25: "I want
+everything to be ready before I launch; a solid product"). The work is still built in milestones, because each
+intake has its own engine, test set and failure modes, but the milestones are internal. Nothing is listed on
+AnkiWeb or announced until every v1.0 feature passes its gate and a private beta has used the whole product. Testers
+before launch get builds by hand, never a public release.
 
 ---
 
@@ -30,20 +32,21 @@ diagnostics" in every bug report, byte-for-byte template restore, and a note nev
 
 ---
 
-## 2. Steps and gates
+## 2. Milestones and gates
 
-Each step ends in a public release (GitHub Releases first, AnkiWeb at 1.0) and a **gate**: a short list of
-things that must be true, checked by someone other than the author where it says so. A step that misses its gate
-does not start the next one; it gets a fix round instead.
+Each milestone ends in an internal build (a tagged commit and a `.ankiaddon` from CI, shared only with the
+author and the private testers) and a **gate**: a short list of things that must be true, checked by someone
+other than the author where it says so. A milestone that misses its gate does not start the next one; it gets a
+fix round instead. The only public release is v1.0, after Gate 4.
 
-### Step 0 — Spikes (decision records 0001–0004)
+### Milestone 0 — Spikes (decision records 0001–0004)
 
 | # | Question | How it is answered | Record |
 |---|---|---|---|
 | 1 | Viewer delivery: inline block vs `_radscroll-vN.js` media file | A throw-away note type with each delivery, synced to AnkiMobile and AnkiDroid (old and new study screen); 20 card flips each; count failures to run | `0001-viewer-delivery.md` |
 | 2 | Decoding engine | Candidate (d) first: `QMediaPlayer` + `QVideoSink` and the bundled `mpv` inside Anki's own Python on macOS, Windows and Linux, against the recorder matrix (§4); measure decode time for pass 1 (≈ 200 px) and pass 2 (full size, chosen frames), seek accuracy, rotation metadata, HEVC on Windows. Fall back to (a)–(c) only if (d) fails a row | `0002-decoding-engine.md` |
 | 3 | Image I/O | `QImage` WebP read / write (quality, grayscale, size) on all three platforms; TIFF, BMP, HEIC readers present? | `0003-image-io.md` |
-| 4 | Minimum Anki version | Run the 0.1 prototype on the last three releases and the oldest with Qt ≥ 6.5; set `min_point_version` to the oldest that passes | `0004-minimum-anki.md` |
+| 4 | Minimum Anki version | Run the M1 prototype on the last three releases and the oldest with Qt ≥ 6.5; set `min_point_version` to the oldest that passes | `0004-minimum-anki.md` |
 
 Also in Step 0: write to Radiopaedia (terms, politeness, the credit format, a heads-up that an add-on will do
 one-case-at-a-time imports); borrow or buy an Android test device; set up a Windows and a Linux VM; start the
@@ -52,7 +55,7 @@ recorder matrix with licensed images only.
 **Gate 0:** four records with numbers; an engine that decodes every row of the matrix on all three platforms (or a
 named fallback per failing row); Radiopaedia asked.
 
-### Step 1 — v0.1 "Scroll": viewer, template manager, image sets
+### Milestone 1 — "Scroll": viewer, template manager, image sets
 
 Delivers: the viewer moved from the author's site as the single source (TypeScript, its tests, one IIFE build);
 the board schema (`ra-board v1`) as a JSON schema with fixtures; the template manager (create "RadScroll Case",
@@ -67,12 +70,11 @@ package (markers, scm unchanged, scheduling snapshot identical, restore byte-ide
 inside the markers, two card types, a note type with other scripts); schema fixtures shared with the author's
 site; the device checklist (§5) on real phones.
 
-**Gate 1 (outsiders first time):** the author's 400+ cards render and scroll under the add-on's block with no
-conversion; two outside testers (one Windows, one macOS, one of them on AnkiDroid) each install from the GitHub
-release and make an image-set card in ≤ 10 min with no help; the device checklist passes; "Copy diagnostics"
-works; no open P0 issue.
+**Gate 1:** the author's 400+ cards render and scroll under the add-on's block with no conversion; two private
+testers (one Windows, one macOS, one of them on AnkiDroid) each install the build by hand and make an image-set card
+in ≤ 10 min with no help; the device checklist passes; "Copy diagnostics" works; no open P0 issue.
 
-### Step 2 — v0.2 "Record": recordings
+### Milestone 2 — "Record": recordings
 
 Delivers: the clip → slices pipeline ported onto the engine from record 0002 (runs, repeats, blur / tear drop,
 recorder outline, end trim, re-assembly); the recorder matrix test set with ground truth; adaptive thresholds
@@ -86,29 +88,39 @@ no blurred frame kept; no stray frame at the ends; the viewport box right or abs
 speed on the reference laptop; memory ceiling on a 3-minute clip; cancel mid-way leaves no temp files and no
 note change.
 
-**Gate 2 (beta):** ≥ 5 outside testers across the three platforms and both phones; each makes a card from their
+**Gate 2:** ≥ 5 private testers across the three platforms and both phones; each makes a card from their
 own recording; every clip they send that fails is added to the matrix and fixed or given a plain message; median
 install-to-first-stack ≤ 10 min; no crash; no silent empty stack; the automatic viewport shipped only with its
 measurement in a decision record.
 
-### Step 3 — v0.3 "Import": Radiopaedia, then v1.0
+### Milestone 3 — "Import": Radiopaedia
 
-Delivers (only with Radiopaedia's answer in hand): paste a case link → choose series → a filled note; politeness
+Delivers (only with Radiopaedia's answer in hand; if the answer is no, F10 is cut from v1.0 and the launch goes
+ahead without it): paste a case link → choose series → a filled note; politeness
 (robots.txt read and honoured, one request at a time, ≥ 10 s apart, `Retry-After`, stop for hours on 403 / 429 /
 503 / a challenge, a bounded cache, an honest User-Agent naming the add-on and its repo); the credit with the
 licence on the back; nothing naming the case on the front; the stray-picture rule with Restore; a first-use
-notice. Then v1.0: docs site, the AnkiWeb listing, the "Prepare for sharing" basics the privacy guard needs
-(sizes, credits present, the disclaimer), issue templates, the support thread.
+notice.
 
 Tests: parser fixtures from cached case JSON (no network in CI); a fake server that counts requests and asserts
 the gap and the stop; a front-leak check (the case title's words must not appear in the Question or Image field);
 the credit present whenever any Radiopaedia content is on the card, boards or not.
 
-**Gate 3 (1.0):** every earlier gate still green on the current Anki; the compatibility matrix run by hand on
-the three desktops and both phones; the AnkiWeb listing text carries the disclaimer; a fresh outside tester
-follows the README alone and succeeds.
+**Gate 3:** a fake Radiopaedia server proves the gap, the stop and the cache; the front-leak check passes on
+every fixture case; the credit is present on every fixture card; private testers import three cases each.
 
-### Step 4 — v1.1+ and convergence
+### Milestone 4 — v1.0: the whole product, then the launch
+
+Delivers: the "Prepare for sharing" basics the masking tools need (sizes, credits present, the disclaimer); the
+docs site; issue templates; the AnkiWeb listing text; the full private beta on the complete product (§6); every
+earlier gate re-run on the current Anki; the fix rounds from the beta closed.
+
+**Gate 4 (launch):** every earlier gate green on the current Anki release; the compatibility matrix run by hand on
+the three desktops and both phones; no open P0 or P1 issue from the beta; a fresh tester follows the README alone
+and succeeds with images, a recording and a Radiopaedia case; the AnkiWeb listing text carries the disclaimer.
+Only then: the AnkiWeb listing, the GitHub Release, the blog post, the subreddits, the support thread.
+
+### After v1.0 — v1.1+ and convergence
 
 DICOM (F12, pydicom pure Python, uncompressed and the syntaxes pure Python can read); the AI tier (F13) with its
 cost display; twins and marks by colour (F14); the rest of sharing polish (F15); the author's site adopts the
@@ -181,15 +193,16 @@ an iPhone and an iPad; AnkiDroid on a phone with the old and with the new study 
 
 ## 6. The beta programme (who tests, how we learn)
 
-- **Who:** 5–10 residents and students found through the author's network and the radiology subreddits once
-  v0.2 exists; at least one each on Windows, macOS, Linux, AnkiMobile and AnkiDroid; none who know the author's site.
-- **What they do:** a one-page script: install from the GitHub release, enable stacks on a note type they
-  already use (or create the RadScroll Case type), make one card from images and one from their own recording,
-  review both on their phone, run Remove. They time the first card.
+- **Who:** 5–10 residents and students found through the author's network (not a public call, since nothing is
+  announced before launch); at least one each on Windows, macOS, Linux, AnkiMobile and AnkiDroid; none who know
+  the author's site. Two of them start at Gate 1, the rest at Gate 2; all of them run the full product at Milestone 4.
+- **What they do:** a one-page script: install the build they were sent, enable stacks on a note type they
+  already use (or create the RadScroll Case type), make one card from images, one from their own recording and
+  one from a Radiopaedia case, review them on their phone, run Remove. They time the first card.
 - **What we collect:** the script's checkboxes, the time, the diagnostics block, and any clip that failed (they
   send it only if it holds no patient data; the form says so in the disclaimer's words).
 - **What we do with it:** every failure becomes a fixture or a plain message; the matrix grows; findings are
-  closed in a fix round before Gate 2 is called.
+  closed in a fix round before the gate they belong to is called.
 - **No telemetry, ever:** the add-on sends nothing; the beta is forms and e-mail.
 
 ---
@@ -216,7 +229,8 @@ ones that would hurt strangers:
 ## 8. Working rules for this repo
 
 - One decision record per design question before the code for it; the record carries the measurements.
-- Commit and push to `main` often; every step ends with a tagged release and a short changelog in plain words.
+- Commit and push to `main` often; every milestone ends with a tagged internal build and a short changelog in
+  plain words; the first public release is v1.0.
 - Tests run on three platforms in CI; the device checklist is run by hand and recorded in the release notes.
 - The author reviews at each gate on his own devices; outsiders test before Gates 1, 2 and 3.
 - The viewer and pipelines have one source, here; the author's site imports them.
