@@ -1,8 +1,8 @@
 # RadScroll - Product Requirements Document
 
-**Version:** 1.2
+**Version:** 1.3
 **Created:** 2026-10-25
-**Status:** Draft (discovery done; Phase 0 spikes next)
+**Status:** Draft (discovery done; Phase 0 spikes next; the build and evaluation plan is [`PLAN.md`](PLAN.md))
 **Owner:** Pouria Rouzrokh
 **Licence:** AGPL-3.0
 
@@ -18,6 +18,8 @@
 - **Success:** A resident turns a 30-second screen recording, a folder of slices, or a Radiopaedia case link into a
   card in under a minute on desktop, with no AI and no account; the stack scrolls, zooms and goes full screen on
   Anki desktop, AnkiMobile and AnkiDroid; the author moves his own 400+ stack cards onto it with no conversion.
+  **A stranger** (someone who has never seen the author's site) installs it from AnkiWeb and makes a first working
+  card within ten minutes, on Windows or Linux as well as macOS, without asking for help.
 - **Constraints:** Free and open source (AGPL-3.0, AnkiWeb requires AGPL-compatible). No server: everything runs
   in the user's Anki. Phones run no add-ons, so the viewer must work as card-template JavaScript alone. Anki
   26.05+ add-ons must bundle any compiled dependency themselves. Patient privacy is the user's responsibility, but
@@ -79,9 +81,16 @@ No open-source tool makes stacks from clips or DICOM for Anki.
 
 ### Primary Users
 
-- **Radiology residents** (the author is one): record a series from PACS or a teaching site with the OS screen
-  recorder, make a card in the evening, review on the phone the next day. Care about speed, phone feel, size.
+- **Radiology residents** (the author is one): record a series from a teaching site, a lecture or PACS with the OS
+  screen recorder, make a card in the evening, review on the phone the next day. Care about speed, phone feel, size.
 - **Medical students on a radiology rotation**: start from Radiopaedia cases and shared decks.
+
+**Where most stacks will come from.** The author's own flow is PACS recordings, but for most users the safe and
+common sources are Radiopaedia cases, teaching sites, lecture videos and image sets from books or question banks:
+these carry no patient details and no institutional policy risk. PACS recordings are often against hospital policy
+and always carry patient details. The product therefore treats the Radiopaedia and image-set paths as the ones that
+must work for everyone from the first release, and the recording path as the power feature that must fail safely
+(a clear message, a manual crop, never a silent bad stack).
 
 ### Secondary Users
 
@@ -136,6 +145,14 @@ Make every CT and MR series on an Anki card scroll like PACS, on every device, f
 - **Phones:** the viewer passes the device checklist (scroll, pinch, pan, flick, double tap, full screen, paired
   scroll) on current AnkiMobile and AnkiDroid releases.
 - **Size:** a typical 3-series card ≤ 10 MB (WebP, ≤ 1024 px).
+- **Works for strangers (before the AnkiWeb listing):** ≥ 5 outside testers (residents or students, at least one each
+  on Windows, macOS and Linux, at least one each on AnkiMobile and AnkiDroid) each make a card from their own
+  material; median time from install to first scrolling card ≤ 10 min; no tester hits a crash or a silent empty
+  stack; every failure they hit ends in a plain message they can act on.
+- **Compatibility:** the device matrix in `PLAN.md` passes on the last three Anki desktop releases, the current
+  AnkiMobile, and AnkiDroid with both the old and the new study screen.
+- **Supportability:** a bug report needs no back-and-forth to reproduce: "Copy diagnostics" gives versions,
+  platform, the engine chosen and the last error; test fixtures cover each class of report.
 - **Adoption (6 months after launch):** 1,000 AnkiWeb installs, average rating ≥ 4.5, ≥ 25 GitHub stars.
 - **Dogfooding:** the author reviews his whole stack collection through RadScroll's viewer.
 
@@ -144,6 +161,11 @@ Make every CT and MR series on an Anki card scroll like PACS, on every device, f
 ## Features & Requirements
 
 ### MVP Features (v1.0)
+
+v1.0 is reached in four public steps, each usable on its own and each tested by outsiders before the next
+(`PLAN.md`): **0.1** viewer + template manager + image sets (F1, F2, F3, F4 images, F9, F11, F17); **0.2** recordings
+(F4a, F5, F6, F7, F8); **0.3** Radiopaedia (F10, if Radiopaedia agrees); **1.0** polish and the AnkiWeb listing.
+Priorities below are for v1.0 as a whole; the step each feature ships in is in `PLAN.md`.
 
 #### F1: The stack viewer
 **Priority:** P0
@@ -162,9 +184,19 @@ finding the abnormality.
 - [ ] No global listeners left behind between cards (desktop reuses one web view); no network requests; no
   `fetch` of files (Anki 26.09 tightened what notes may read).
 - [ ] Where scripts don't run, the still composite shows.
-**Implementation Notes:** TypeScript, built to one dependency-free IIFE. Default delivery is a marked block inside
-the note type's templates (proven on AnkiMobile); a versioned `_radscroll-vN.js` media file is a Phase 0 spike
-only, because forum reports say external scripts load unreliably on AnkiMobile.
+- [ ] Survives every host's way of running card scripts: AnkiDroid's new study screen updates the DOM in parts
+  (no `load` / `DOMContentLoaded`, the script may run again in the same scope, so no top-level `let` / `const`, one
+  guarded IIFE); desktop reuses one web view (re-scan on every card, no leaked listeners); AnkiMobile's swipes are
+  native and can't be stopped by a card (the viewer never needs a horizontal swipe; the docs say which swipe
+  settings to turn off); AnkiDroid stops its own gestures over an element only on the new study screen (the
+  `tappable` class and `touch-action` are set anyway; a full-screen stack is the reliable path on both phones).
+- [ ] Works inside any note type, not only the author's: no assumption about field names, card count or other
+  scripts on the card; `ra-` class names stay (they are the contract) and are unlikely to clash; the CSS is scoped
+  to `.ra-board`.
+**Implementation Notes:** TypeScript, built to one dependency-free IIFE (ES2017 target for older WebViews).
+Default delivery is a marked block inside the note type's templates (proven on AnkiMobile); a versioned
+`_radscroll-vN.js` media file is a Phase 0 spike only, because forum reports say external scripts load unreliably
+on AnkiMobile and AnkiDroid.
 
 #### F2: The board format
 **Priority:** P0
@@ -176,7 +208,11 @@ conversion.
   tile geometry in percentages.
 - [ ] Every slice is an `<img>` so Check Media and media sync see it; names are content-addressed
   (`ra-s-<sha1>.webp`), so a reused stack costs nothing.
-- [ ] Older viewers ignore attributes they don't know.
+- [ ] Older viewers ignore attributes they don't know; **every parser and writer keeps attributes it doesn't know**
+  (the author's site's editor rewrote boards from a fixed list and lost new attributes on every edit; the add-on's
+  board round-trip is byte-identical for an untouched board and keeps unknown `data-ra-*` on an edited one).
+- [ ] The schema states every index base (slice maps and marks are **1-based** in the author's code; the site's
+  design record showed them 0-based, so the schema is the only source from now on).
 - [ ] A JSON schema and fixtures in the repo; the author's site tests against the same fixtures.
 
 #### F3: Template manager (enable / update / remove)
@@ -247,12 +283,24 @@ Mac recording so that I don't have to convert anything.
 4. Pass 2, full resolution, streamed: only chosen frames decoded and encoded (WebP q80, ≤ 1024 px, grayscale
    unless coloured, so colour arrows survive).
 5. Blurred in-between frames of a fast flick, torn frames and cross-fades are dropped, conservatively.
-6. The macOS recording outline (dashed 1 px line, corner handles) is removed or filled from the neighbour.
+6. The macOS recording outline (dashed 1 px line, corner handles) is removed by **cropping** inside it. Never
+   filled from a neighbouring slice: the author's site did that, and it pastes one slice's pixels onto another,
+   which breaks "real images only". If the outline can't be cropped away, the frame is kept as recorded.
 7. Leading / trailing frames that aren't the series are trimmed (a step > 4× the median within the first / last
-   10 %).
+   10 %, **and** unlike every kept slice, so a scalp-only top slice of a thin-slice head CT is not cut).
 8. Slices scrolled back and forth are re-assembled in order.
-**Acceptance Criteria:** the clip-quality and speed metrics above, on the test set.
-**Implementation Notes:** the decoding engine is a Phase 0 decision (see Architecture).
+9. **Every measurement is taken inside the active region** (the pixels that change across the clip, found in
+   pass 1), not over the whole frame. Measured over the whole frame, a 512 px viewport in a 1920 × 1080 recording is
+   13 % of the pixels, so real slice steps fall under the repeat threshold and whole stretches of a thin-slice series
+   collapse into one slice; blur and blank checks stop firing for the same reason. The region is also the automatic
+   crop proposal of F8.
+10. **Thresholds adapt to the clip.** The repeat, new-slice and duplicate cuts come from the clip's own noise floor
+   (the distribution of within-run frame differences), with the author's constants as minimums; nothing is merged
+   on a ratio of the median step alone, since a homogeneous stretch (liver, vertex) has small real steps.
+**Acceptance Criteria:** the clip-quality and speed metrics above, on the test set; thinning never drops a marked
+slice; a stack is never thinned without the user's click.
+**Implementation Notes:** the decoding engine is a Phase 0 decision (see Architecture). Pass 2 decodes only the
+chosen frames (by frame index) and crops in the decoder, so its cost grows with slices kept, not frames recorded.
 
 #### F7: Slice order
 **Priority:** P0
@@ -263,12 +311,17 @@ Mac recording so that I don't have to convert anything.
 - [ ] Recordings and Radiopaedia (no positions in the data): the recorded / uploader's order, Reverse in the review
   strip; a pixel heuristic only if it measures ≥ 95 % right on a test set; the AI check (F13) when enabled.
 
-#### F8: Automatic crop, no AI
-**Priority:** P0
+#### F8: Crop and mask (manual always, automatic when it is sure)
+**Priority:** P0 for the manual crop box, the margin rule and the mask tool; P1 (best effort, 0.2) for the automatic
+viewport; v1.1 for overlay candidates.
 **Description:** People record the whole screen, a window, or a rough selection. The stack should hold only the
-image, with a small black margin, found by image processing alone. One crop box applies to the whole stack.
+image, with a small black margin. One crop box applies to the whole stack. The guaranteed path is a crop box the
+user drags in the review strip; the automatic rules below only propose a box, show it, and say how sure they are.
+A wrong automatic box is worse than none, so when the rules aren't sure the strip opens with the full frame and asks.
 **Acceptance Criteria:**
-- [ ] **The image area, found by what changes.** Across a scrolled series the image changes from slice to slice
+- [ ] **Manual first:** drag a crop box over any slice; the same box applies to every slice; the box is remembered
+  per recorder window size, so the next clip from the same setup starts with it.
+- [ ] **The image area, found by what changes** (automatic proposal). Across a scrolled series the image changes from slice to slice
   while the PACS / browser / lecture-slide interface around it stays still. The per-pixel change across the whole
   clip marks the image viewport; the crop box is its bounding rectangle, snapped to the viewport's straight edges.
   Works for a full-screen recording of a PACS window, a browser tab, or a slide with a video in it.
@@ -286,6 +339,9 @@ image, with a small black margin, found by image processing alone. One crop box 
   small size, and offered the same way. Masking is offered, never forced.
 - [ ] **Manual override:** drag the crop box or a mask in the review strip; the same box applies to every slice.
 - [ ] Optional AI help for what pixel rules can't judge is in F13 ("find text and non-image elements").
+- [ ] The automatic viewport is measured on the recorder matrix (F4a) and shipped only when it proposes the right
+  box on ≥ 90 % of clips and never proposes a box that cuts anatomy; otherwise it stays off and the manual box is
+  the default.
 
 #### F9: Layout
 **Priority:** P0
@@ -339,6 +395,33 @@ plainly, every time it matters, regardless of what masking it offers.
   and "Crop to region" keeps only the image area.
 - [ ] Nothing is uploaded anywhere by the MVP except the user-started Radiopaedia download.
 - [ ] No telemetry.
+
+#### F17: Runs on a stranger's machine
+**Priority:** P0
+**Description:** The author's site runs on one server he controls; the add-on runs on thousands of machines he
+will never see. Every feature above must hold on Windows, macOS and Linux, on the last three Anki releases, with
+other add-ons installed, and must be diagnosable from a bug report alone.
+**Acceptance Criteria:**
+- [ ] **Compatibility matrix** kept in the repo and checked in CI and by hand before each release: Anki versions
+  (the current release and the two before it; `min_point_version` set to the oldest that passes, not to the newest
+  packaging change), the three desktop platforms, AnkiMobile current, AnkiDroid current with the old and the new
+  study screen, dark and light themes, Anki's "Reduce motion" and font-size settings.
+- [ ] **No compiled dependency, no download at runtime** unless a Phase 0 record proves there is no other way. The
+  add-on uses what Anki already ships (its Python, PyQt6 with QtMultimedia's FFmpeg backend and the WebP image
+  plugin, the bundled `mpv`) before anything else.
+- [ ] **Fails safe, says why.** Every intake ends in a stack or in one plain message naming the cause (codec, size,
+  permissions, a locked collection) and what to do; no stack is written to a note until the user presses Insert;
+  an exception anywhere leaves the note and the templates unchanged.
+- [ ] **Diagnostics without telemetry:** a "Copy diagnostics" button (versions, platform, engine, the last 50 log
+  lines with paths and names stripped) and a log file in `user_files/`; the issue template asks for it.
+- [ ] **Coexists:** no monkey-patching of Anki's editor or reviewer; hooks only; the viewer tolerates other
+  template scripts; the template manager refuses to touch a template it can't parse and says so.
+- [ ] **Leaves cleanly:** Remove restores the templates byte for byte; uninstalling leaves cards that show the still;
+  media files are never deleted by the add-on (Check Media stays Anki's job).
+- [ ] **Budgets hold on slow machines:** the pipeline reports progress, can be cancelled, and never blocks the UI
+  thread; a 3-minute 1080p clip finishes on a 2018 laptop.
+- [ ] **Shared decks:** a deck exported with stack cards works for a recipient without the add-on (the viewer is in
+  the note type; the media travels with the deck).
 
 ### Future Features (Post-MVP)
 
@@ -456,21 +539,38 @@ Shared with the author's site: viewer (TS) · board schema + fixtures · pipelin
      codecs, so WebCodecs H.264 support in Anki's build must be tested; ffmpeg.wasm decodes in software.
    - (b) Python with per-platform numpy and an ffmpeg binary downloaded on first use (checksum-verified).
    - (c) A hybrid: ffmpeg for decoding, pixel work in TypeScript.
-   (a) also enables F16. Decide with the F4a recorder matrix (H.264, HEVC, VP9, AV1, GIF, constant and variable
+   - (d) **What Anki already ships** (checked 2026-10-25 in Anki 26.09.2 on macOS): Python 3.13; PyQt6 with
+     QtMultimedia and its **FFmpeg media backend** (`libavcodec` 61 with H.264, HEVC, VP8 / VP9, AV1, MJPEG,
+     ProRes, GIF, WebP and APNG decoders) and the **WebP image plugin**; the `anki_audio` package with **mpv
+     0.41**. So a pure-Python add-on can decode any recording with `QMediaPlayer` + `QVideoSink` (frames as
+     `QImage`, hardware-accelerated where the OS allows) or by running the bundled `mpv` (`--vo=image` with a scale
+     filter for pass 1), do the pixel work on `QImage` bytes (downscale, grayscale and compositing in Qt's C++; the
+     differencing in Python on ≈ 200 px frames), and encode WebP through `QImage.save`. No wheel, no download,
+     no licence question beyond Qt's own. To verify in the spike: the same plugins ship in the Windows and Linux
+     builds (`anki_audio` carries mpv for Windows and macOS; Linux may rely on the system mpv, so the Qt path is
+     the primary one), decode speed of pass 1 on a 3-minute clip, exact seeking for pass 2, HEVC on Windows without
+     the paid Microsoft codec, and rotation metadata.
+   (a) also enables F16. **Test (d) first**; it is the only candidate that needs nothing bundled and nothing
+   downloaded. Decide with the F4a recorder matrix (H.264, HEVC, VP9, AV1, GIF, constant and variable
    frame rate) on macOS, Windows and Linux: an engine that can't decode HEVC phone recordings or VP9 / AV1 web
    recordings on all three is out, or needs a fallback. Mind codec licensing when bundling decoders.
-3. **Image I/O without compiled dependencies:** Qt's image plugins (WebP) via the bundled PyQt6, or the web view's
-   canvas; Pillow only if bundled.
+3. **Image I/O without compiled dependencies:** Qt's image plugins (`libqwebp` is in the macOS build; confirm
+   Windows and Linux) via the bundled PyQt6, or the web view's canvas; Pillow only if bundled. TIFF and HEIC come
+   from the same plugin set (`qtiff`, `qmacheif` on macOS only).
+4. **Minimum Anki version.** The PRD's first draft set 26.05 because of the packaging change. Nothing in the add-on
+   needs 26.05: hooks, the editor button, media and note-type APIs are older. Set `min_point_version` to the oldest
+   release whose bundled Qt has the FFmpeg backend and WebP plugin (Qt ≥ 6.5, so Anki 24.x or later), then test the
+   last three releases and state the floor in the manifest and the README.
 
 ### Technology Stack
 
 | Layer | Technology | Version | Rationale |
 |---|---|---|---|
-| Host | Anki desktop (`aqt`, `anki`) | 26.9.3 (minimum 26.05) | Current stable; Briefcase packaging since 26.05 |
-| Add-on language | Python | as bundled by Anki (3.13 expected; verify in Phase 0) | Anki add-on API |
+| Host | Anki desktop (`aqt`, `anki`) | 26.9.2 current (the author's install); minimum set by spike 4, tested on the last three releases | Current stable; Briefcase packaging since 26.05 |
+| Add-on language | Python | 3.13 (Anki 26.09.2 bundle, checked 2026-10-25) | Anki add-on API |
 | UI toolkit | PyQt6 / Qt | Qt 6.11 (Anki 26.09 line) | Bundled with Anki |
 | Viewer + web UI | TypeScript → one IIFE (esbuild) | TS 5.x | No runtime dependencies on cards |
-| Video decoding | WebCodecs / ffmpeg.wasm (`@ffmpeg/ffmpeg` 0.12.15, `@ffmpeg/core` 0.12.10) or ffmpeg binary | Phase 0 | See spike 2 |
+| Video decoding | Candidate (d) first: QtMultimedia's FFmpeg backend / bundled `mpv`; else WebCodecs / ffmpeg.wasm (`@ffmpeg/ffmpeg` 0.12.15, `@ffmpeg/core` 0.12.10) or an ffmpeg binary | Phase 0 | See spike 2 |
 | DICOM | pydicom | 3.0.2 | Pure Python |
 | Tests | pytest (+ the `anki` package for collection tests), vitest, Playwright (WebKit ≈ iOS, Chromium ≈ Android / desktop) | current | Headless checks of the viewer and the template manager |
 | CI / release | GitHub Actions → `.ankiaddon` artifact | — | Upload to AnkiWeb by hand; GitHub Releases |
@@ -557,30 +657,37 @@ None: no accounts, no server. AI keys (F13) are the user's own, stored outside t
 
 ## Development Phases
 
+The detailed plan, with what each step delivers, how it is tested and the go / no-go gate at its end, is
+[`PLAN.md`](PLAN.md). In short:
+
 ### Phase 0: Spikes (1–2 sessions)
-**Goals:** settle viewer delivery, the decoding engine and image I/O.
+**Goals:** settle viewer delivery, the decoding engine (candidate (d) first), image I/O and the minimum Anki
+version; a first look at the viewer inside a stranger-style note type on AnkiMobile and AnkiDroid (new study screen).
 **Deliverables:** a short decision record each, with measurements on macOS / Windows / Linux and AnkiMobile /
-AnkiDroid.
+AnkiDroid; the recorder matrix started (synthetic or licensed images only).
 
-### Phase 1: Foundation (MVP, v1.0)
-**Goals:** F1–F11 (including F4a, any recorder / format, and F8, automatic crop).
-**Deliverables:**
-- The viewer moved here as the single source (with its tests), built to one file.
-- The board schema and fixtures.
-- The template manager, Add stack, the review strip, the clip pipeline, order, margin, layout, Radiopaedia
-  import, the privacy guard.
-- CI building `.ankiaddon`; a device checklist run on real phones.
+### Phase 1: v0.1 "Scroll" (viewer, template manager, image sets)
+**Goals:** F1, F2, F3, F4 (images), F9, F11, F17. The author's 400+ cards run on it; the first outside testers try it.
+**Deliverables:** the viewer moved here as the single source (with its tests) and built to one file; the board
+schema and fixtures; the template manager with backup and byte-for-byte restore; Add stack for images; the
+privacy notice; diagnostics; CI building `.ankiaddon` on three platforms; the device checklist run on real phones.
 
-### Phase 2: Enhancement (v1.1–v1.3)
-**Goals:** DICOM (F12), the AI tier (F13), twins and marks (F14), sharing polish (F15).
+### Phase 2: v0.2 "Record" (recordings)
+**Goals:** F4a, F5, F6, F7, F8 (manual always; automatic viewport only if it passes its bar).
+**Deliverables:** the ported pipeline on the chosen engine; the recorder-matrix test set and its measurements; the
+review strip; the beta with ≥ 5 outside testers and their findings closed.
 
-### Phase 3: Launch and convergence
-**Goals:**
-- AnkiWeb listing ("RadScroll: scrollable CT/MRI stacks from clips, DICOM and Radiopaedia"), GitHub Release,
-  GitHub Pages site, a post on the author's blog, then r/Anki, r/medicalschoolanki and radiology subreddits
-  (each sub's self-promotion rules first), and an Anki Forums support thread.
-- The author's site consumes RadScroll's viewer, schema and pipelines; the author switches his own cards to
-  RadScroll's template block.
+### Phase 3: v0.3 "Import" (Radiopaedia), then v1.0
+**Goals:** F10 behind the Radiopaedia go / no-go (their answer, their terms); polish; the AnkiWeb listing.
+**Deliverables:** the import with its politeness tests; the "Prepare for sharing" basics from F15 that the privacy
+guard needs; docs site; AnkiWeb listing ("RadScroll: scrollable CT/MRI stacks from clips, images and Radiopaedia"),
+GitHub Release, a post on the author's blog, then r/Anki, r/medicalschoolanki and radiology subreddits (each sub's
+self-promotion rules first), and an Anki Forums support thread.
+
+### Phase 4: Enhancement (v1.1–v1.3) and convergence
+**Goals:** DICOM (F12), the AI tier (F13), twins and marks (F14), the rest of sharing polish (F15). The author's
+site consumes RadScroll's viewer, schema and pipelines; the author switches his own cards to RadScroll's template
+block.
 
 ---
 
@@ -628,11 +735,17 @@ AnkiDroid.
 
 ## Open Questions
 
-- [ ] Viewer delivery: can a media-file script load reliably on AnkiMobile (spike 1)?
-- [ ] Decoding engine (spike 2) and image I/O without compiled dependencies (spike 3).
-- [ ] The exact Python version bundled with Anki 26.09; any AnkiWeb add-on size limit.
-- [ ] Radiopaedia's Terms of Use on automated downloading; whether to ask Radiopaedia for a blessing before launch.
-- [ ] Keep the `ra-board` / `ra-stack` class names publicly, or add `rs-*` names with `ra-*` still read?
+- [ ] Viewer delivery: can a media-file script load reliably on AnkiMobile and AnkiDroid (spike 1)?
+- [ ] Decoding engine (spike 2: candidate (d) first), image I/O (spike 3) and the minimum Anki version (spike 4).
+- [ ] Do the Windows and Linux Anki builds ship the same Qt FFmpeg backend, WebP plugin and mpv as the macOS build?
+  Does HEVC decode on Windows without the paid Microsoft codec? Any AnkiWeb add-on size limit?
+- [ ] Radiopaedia's Terms of Use on automated downloading. **Decision: ask Radiopaedia in writing during Phase 0;
+  F10 ships only with their answer in hand** (it is one message away and the feature is a whole release step).
+- [x] Class names: keep `ra-board` / `ra-stack` / `data-ra-*` as they are. They are the contract with the author's
+  cards and site; a second name would mean two code paths forever. (Decided 2026-10-25.)
+- [ ] An Android test device: the author has none. Borrow one, or use an emulator for the gesture suite and a real
+  device from an outside tester for the release checklist.
+- [ ] Windows and Linux test machines: a VM each for Phase 0 and CI runners for every release.
 - [ ] Domain: `radscroll.org` / `radscroll.app` (look unregistered), or a subdomain of the author's site.
 - [ ] Relation to the author's possible startup idea (Mnemoscope): stays separate for now.
 - [ ] Which AI providers to support first (F13), and whether `keyring` can be bundled on all three platforms.
@@ -667,3 +780,4 @@ PRD reuses).
 | 1.0 | 2026-10-25 | Pouria Rouzrokh (with Claude) | Initial draft from the brainstorm |
 | 1.1 | 2026-10-25 | Pouria Rouzrokh (with Claude) | F4a any recorder / format; F8 automatic crop without AI (viewport by change, overlays by stillness); F13 AI settings, key storage, providers |
 | 1.2 | 2026-10-25 | Pouria Rouzrokh (with Claude) | F11 "not HIPAA compliant" disclaimer everywhere it matters; F13 cost shown before each call and in Settings → AI → Usage |
+| 1.3 | 2026-10-25 | Pouria Rouzrokh (with Claude) | Critical review: v1.0 in four public steps (0.1 scroll, 0.2 record, 0.3 import, 1.0); Radiopaedia and image sets as the paths that must work for everyone, PACS recordings as the power path; F8 manual crop guaranteed, automatic viewport only past a measured bar; F17 "runs on a stranger's machine" (compatibility matrix, diagnostics, fail-safe, coexistence); decoding candidate (d) from what Anki already ships (Qt FFmpeg backend, WebP plugin, mpv; found in 26.09.2); minimum Anki version as a spike; F1 host quirks (AnkiDroid new study screen, swipes); "works for strangers" metrics; Radiopaedia go / no-go; `ra-` names kept; the plan moved to `PLAN.md` |

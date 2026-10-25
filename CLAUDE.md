@@ -3,8 +3,9 @@
 RadScroll is an open-source (AGPL-3.0) Anki add-on: scrollable CT / MR stacks made from screen recordings, image
 sets, DICOM series and Radiopaedia cases, with a viewer that runs on Anki desktop, AnkiMobile and AnkiDroid.
 
-**Start here:** [`docs/PRD.md`](docs/PRD.md) is the product plan (features F1–F16, the architecture, the Phase 0
-spikes, risks and open questions). `.claude/checkpoints/checkpoint-0/prd.md` points to the same file for the
+**Start here:** [`docs/PRD.md`](docs/PRD.md) is the product plan (features F1–F17, the architecture, the Phase 0
+spikes, risks and open questions) and [`docs/PLAN.md`](docs/PLAN.md) is the build and evaluation plan (the four
+public steps 0.1 → 1.0, their gates, the recorder matrix, the device checklist, the beta programme). `.claude/checkpoints/checkpoint-0/prd.md` points to the same file for the
 `/pr:mvp-dev` workflow.
 
 **Private context:** if `CLAUDE.local.md` exists (git-ignored, on the owner's machine only), read it first. It says
@@ -13,8 +14,9 @@ this repository is public.
 
 ## Status
 
-Planning. Next: Phase 0 spikes (viewer delivery on AnkiMobile, the decoding engine, image I/O without compiled
-dependencies), each ending in a short decision record under `docs/decisions/`.
+Planning (PRD v1.3, plan v1.0, 2026-10-25). Next: Phase 0 spikes (viewer delivery on AnkiMobile and AnkiDroid, the
+decoding engine with what Anki already ships first, image I/O, the minimum Anki version), each ending in a short
+decision record under `docs/decisions/`; and Radiopaedia asked in writing before F10 is built.
 
 ## Rules
 
