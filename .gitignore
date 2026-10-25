@@ -1,0 +1,30 @@
+# private context for Claude Code (never commit)
+CLAUDE.local.md
+.claude/settings.local.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+
+# Node / web
+node_modules/
+dist/
+coverage/
+playwright-report/
+test-results/
+
+# build outputs
+*.ankiaddon
+build/
+
+# local media (never commit real patient images)
+local-media/
+*.dcm
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/

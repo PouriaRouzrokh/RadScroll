@@ -1,0 +1,46 @@
+# CLAUDE.md — RadScroll
+
+RadScroll is an open-source (AGPL-3.0) Anki add-on: scrollable CT / MR stacks made from screen recordings, image
+sets, DICOM series and Radiopaedia cases, with a viewer that runs on Anki desktop, AnkiMobile and AnkiDroid.
+
+**Start here:** [`docs/PRD.md`](docs/PRD.md) is the product plan (features F1–F16, the architecture, the Phase 0
+spikes, risks and open questions). `.claude/checkpoints/checkpoint-0/prd.md` points to the same file for the
+`/pr:mvp-dev` workflow.
+
+**Private context:** if `CLAUDE.local.md` exists (git-ignored, on the owner's machine only), read it first. It says
+where the original implementation and the design conversation live. Never copy its contents into tracked files:
+this repository is public.
+
+## Status
+
+Planning. Next: Phase 0 spikes (viewer delivery on AnkiMobile, the decoding engine, image I/O without compiled
+dependencies), each ending in a short decision record under `docs/decisions/`.
+
+## Rules
+
+- **Public repo.** No patient data, no private hostnames, paths, keys or personal infrastructure in tracked files,
+  commits or issues. Test media must be synthetic, public-domain or licensed for reuse (record the licence).
+- **Real images only.** Never generate or alter anatomy. Allowed: removing duplicate / blurred / stray frames,
+  trimming plain black padding to a small margin (≈ 4 %, one box per stack, anatomy never cut), masks that hide
+  patient details or answers.
+- **No AI in the core.** Everything in the MVP is image processing. The AI tier (F13) is optional, the user's own
+  key, off by default, and shows what will be sent.
+- **Phones run no add-ons.** Anything a card needs at review time lives in the template block (viewer JS + CSS)
+  and the field HTML. The viewer makes no network or file requests and leaves no global listeners behind.
+- **The board format (`ra-board v1`) is a contract.** The owner's existing cards and his private site use it.
+  Additions must be ignorable by older viewers; never rename or remove an attribute without a migration plan.
+- **One implementation.** The viewer and pipelines here become the single source for the owner's site too; never
+  fork them.
+- **Never change a user's fields or card types** (that forces a full sync). Templates are edited only inside
+  RadScroll's markers, with a backup first.
+- **Radiopaedia:** one case at a time, started by the user, ≥ 10 s between requests to radiopaedia.org, cached,
+  credit on the back, nothing on the front that names the case.
+- **Names:** no "Anki" or "Radiopaedia" in product names; "for Anki" only in descriptions.
+- **Writing:** plain, short sentences in docs and UI text; explain what changed and why in commit messages.
+
+## Workflow
+
+- Design work goes through decision records (`docs/decisions/NNNN-title.md`) before code.
+- Commit and push to `main` often (solo project); open issues for anything deferred.
+- Tests: pytest for Python, vitest for the viewer, Playwright (WebKit ≈ iOS, Chromium ≈ Android / desktop) for
+  gestures. Real-device checks on AnkiMobile and AnkiDroid before every release.
