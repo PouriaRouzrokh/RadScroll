@@ -708,7 +708,7 @@ block.
 | Recordings from other tools break the pipeline (codecs, constant frame rate, compression noise, full-screen UI) | High | High | F4a recorder matrix in the test set from Phase 0; adaptive thresholds; viewport detection (F8) |
 | An API key leaks (synced config, logs, screenshots in issues) | High | Low | OS keychain or owner-only file outside the collection; masked field; keys never logged |
 | An AI provider changes its API or prices | Low | Medium | OpenAI-compatible client; custom base URL; models editable |
-| Radiopaedia blocks or objects | Medium | Low | Polite fetching, credit, non-commercial; ask Radiopaedia before launch; the feature can be switched off |
+| Radiopaedia blocks or objects | Medium | Low | The playlist-download path makes no request; the link import behaves like one person browsing (polite, cached, credited) and sits behind a switch, so a release can turn it off |
 | Large media slows sync | Medium | Medium | WebP, ≤ 1024 px, budgets, content-addressed reuse |
 | New AnkiWeb account can't upload yet | Low | Low | The author's existing account; GitHub Releases meanwhile |
 | A closed fork re-sells it | Low | Low | AGPL-3.0 |
