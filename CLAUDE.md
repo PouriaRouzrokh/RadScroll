@@ -23,6 +23,9 @@ dependencies), each ending in a short decision record under `docs/decisions/`.
 - **Real images only.** Never generate or alter anatomy. Allowed: removing duplicate / blurred / stray frames,
   trimming plain black padding to a small margin (≈ 4 %, one box per stack, anatomy never cut), masks that hide
   patient details or answers.
+- **Never claim compliance.** RadScroll is not HIPAA compliant and not a de-identification tool. Never write
+  "HIPAA", "compliant", "anonymised" or "de-identified" in UI, docs or marketing except to say it is not; the
+  disclaimer (PRD F11) shows wherever privacy matters.
 - **No AI in the core.** Everything in the MVP is image processing. The AI tier (F13) is optional, the user's own
   key, off by default, and shows what will be sent.
 - **Phones run no add-ons.** Anything a card needs at review time lives in the template block (viewer JS + CSS)

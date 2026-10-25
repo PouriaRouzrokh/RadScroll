@@ -6,6 +6,10 @@ AnkiMobile and AnkiDroid.
 
 > **Status: planning.** Nothing to install yet. The plan is in [`docs/PRD.md`](docs/PRD.md).
 
+> **⚠️ Not HIPAA compliant.** RadScroll is a study tool, not a de-identification tool, and makes no compliance
+> claim. Masking and cropping can miss patient details. Only record, store, sync or share images you are allowed to,
+> and remove patient details yourself. AnkiWeb and AI providers are third parties.
+
 ## What it will do
 
 - **Make stacks from what you already have.** Drop a screen recording of yourself scrolling a series: repeated,

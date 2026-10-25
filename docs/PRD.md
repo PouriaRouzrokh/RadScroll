@@ -1,6 +1,6 @@
 # RadScroll - Product Requirements Document
 
-**Version:** 1.1
+**Version:** 1.2
 **Created:** 2026-10-25
 **Status:** Draft (discovery done; Phase 0 spikes next)
 **Owner:** Pouria Rouzrokh
@@ -310,10 +310,31 @@ image, with a small black margin, found by image processing alone. One crop box 
   the front names the case (its address and title contain the diagnosis).
 - [ ] A first-use notice: personal, non-commercial study (CC BY-NC-SA); Radiopaedia may limit heavy use.
 
-#### F11: Privacy guard
+#### F11: Privacy guard and the "not HIPAA compliant" disclaimer
 **Priority:** P0
+**Description:** RadScroll is a study tool. It is **not HIPAA compliant**, not a de-identification tool, and makes
+no compliance claim of any kind (HIPAA, GDPR or any institution's policy). Masking and cropping help; they do not
+guarantee that every patient detail is gone (text burned into the image, faces in 3D reconstructions, details in
+the anatomy itself). The user decides what they are allowed to record, keep, sync and share. The tool says this
+plainly, every time it matters, regardless of what masking it offers.
+
+**The disclaimer text** (one source string, used everywhere):
+> RadScroll is not HIPAA compliant and is not a de-identification tool. Masking and cropping can miss patient
+> details. Only record, store, sync or share images you are allowed to, and remove patient details yourself. AnkiWeb
+> and AI providers are third parties; RadScroll does not make sending data to them safe or compliant.
+
 **Acceptance Criteria:**
-- [ ] A first-run notice about patient details in screen recordings and shared decks.
+- [ ] **First run:** a notice with the disclaimer that must be acknowledged ("I understand") before the first stack
+  is made; shown again after any update that changes it.
+- [ ] **Review strip:** a short permanent line under the mask tools ("Masking helps but can miss details. Not
+  HIPAA compliant.") with a link to the full text.
+- [ ] **AI:** the disclaimer at the top of Settings → AI, and again (with what will be sent) before the first cloud
+  call of each session; cloud providers are named as third parties; local models suggested for clinical images.
+- [ ] **Sharing:** the "Prepare for sharing" check (F15) and any export repeat it.
+- [ ] **Public text:** the README, the AnkiWeb listing and the docs site carry it near the top; the licence's
+  no-warranty clause is linked.
+- [ ] Nothing in the UI, docs or marketing says "HIPAA", "compliant", "anonymised" or "de-identified" except to say
+  it is not.
 - [ ] In the review strip, "Mask a region" applies one black box to every slice (names, MRNs, dates in overlays),
   and "Crop to region" keeps only the image area.
 - [ ] Nothing is uploaded anywhere by the MVP except the user-started Radiopaedia download.
@@ -358,8 +379,16 @@ review strip). A small Qt dialog, not Anki's raw JSON config editor (which would
 - **Privacy:** "Send frames only after masking" (on by default); "Show me exactly what will be sent" (on by
   default: thumbnails + text before the first call of each session); a reminder that cloud providers must not get
   patient data the user isn't allowed to share; a local model recommended for PACS recordings.
-- **Cost:** an estimate before each call (from the provider's prices or the response's usage), a running total, and
-  an optional monthly cap after which calls ask first.
+- **Cost, before each call:** an estimate on the button's confirmation ("≈ $0.002 with gemini-flash"), from the
+  provider's published prices or OpenRouter's reported cost; local models show "free (local)".
+- **Cost, in Settings → AI → Usage:** a table the user can always open:
+  - spending this month and all time, per provider and per model;
+  - the last 50 calls (date, task, model, images sent, tokens, cost), each marked "estimated" or "reported by the
+    provider";
+  - a **monthly cap** (off by default): past it, every call asks first; an optional hard stop;
+  - Reset, and Export as CSV.
+  Usage is kept in the add-on's `user_files/` folder on this computer (not synced, never in the collection).
+  The dialog says that the provider's own dashboard is the bill of record.
 
 **Implementation Notes:** one small HTTP client (standard library, no provider SDKs) speaking the
 OpenAI-compatible chat format, which OpenRouter, OpenAI, Gemini, Ollama and LM Studio all accept, plus Anthropic's
@@ -518,7 +547,7 @@ None: no accounts, no server. AI keys (F13) are the user's own, stored outside t
 
 | Area | Requirement | How Addressed |
 |---|---|---|
-| Patient privacy (HIPAA and equivalents) | No PHI in cards that are shared or sent to third parties | First-run notice, mask / crop tools, AI off by default with a "what will be sent" step, a sharing check (F15) |
+| Patient privacy (HIPAA, GDPR and equivalents) | **RadScroll is not HIPAA compliant and makes no compliance claim**; it is not a de-identification tool | The disclaimer everywhere it matters (F11); mask / crop tools offered as help, not a guarantee; AI off by default with a "what will be sent" step; local models suggested; a sharing check (F15). Responsibility stays with the user |
 | AnkiWeb terms | AGPL-3.0 or compatible licence | AGPL-3.0 |
 | Anki trademark | No implied affiliation | Name without "Anki"; "for Anki" only in descriptions |
 | Radiopaedia | CC BY-NC-SA: non-commercial, credit, share-alike; robots.txt crawl delay | One case at a time, user-started, cached; credit line on the back; first-use notice; read Radiopaedia's Terms of Use before release (open question) |
@@ -637,3 +666,4 @@ PRD reuses).
 |---|---|---|---|
 | 1.0 | 2026-10-25 | Pouria Rouzrokh (with Claude) | Initial draft from the brainstorm |
 | 1.1 | 2026-10-25 | Pouria Rouzrokh (with Claude) | F4a any recorder / format; F8 automatic crop without AI (viewport by change, overlays by stillness); F13 AI settings, key storage, providers |
+| 1.2 | 2026-10-25 | Pouria Rouzrokh (with Claude) | F11 "not HIPAA compliant" disclaimer everywhere it matters; F13 cost shown before each call and in Settings → AI → Usage |
