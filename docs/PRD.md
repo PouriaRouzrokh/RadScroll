@@ -745,8 +745,14 @@ block.
 - [ ] Decoding engine (spike 2: candidate (d) first), image I/O (spike 3) and the minimum Anki version (spike 4).
 - [ ] Do the Windows and Linux Anki builds ship the same Qt FFmpeg backend, WebP plugin and mpv as the macOS build?
   Does HEVC decode on Windows without the paid Microsoft codec? Any AnkiWeb add-on size limit?
-- [ ] Radiopaedia's Terms of Use on automated downloading. **Decision: ask Radiopaedia in writing during Phase 0;
-  F10 ships only with their answer in hand** (it is one message away and the feature is a whole release step).
+- [ ] Radiopaedia's Terms of Use on automated downloading. The content licence (CC BY-NC-SA 3.0, checked
+  2026-10-25) allows non-commercial study use with their credit format, so the cards are fine. The Terms separately
+  forbid access "by any automated or systematic means" and say there is no API for downloading cases; one
+  user-started case at a time is polite and not bulk, but it is still code fetching pages. **Decision: ask Radiopaedia
+  in writing during Phase 0; F10 ships only with their answer in hand** (one message; a no cuts F10 from v1.0).
+  **Try first in Phase 0:** their "download playlist" feature, which the Terms sanction "for teaching or personal
+  study". If that download holds the slices in a readable form, "import a playlist you downloaded yourself" needs no
+  network and no permission, and could replace or precede the link import.
 - [x] Class names: keep `ra-board` / `ra-stack` / `data-ra-*` as they are. They are the contract with the author's
   cards and site; a second name would mean two code paths forever. (Decided 2026-10-25.)
 - [ ] An Android test device: the author has none. Borrow one, or use an emulator for the gesture suite and a real
