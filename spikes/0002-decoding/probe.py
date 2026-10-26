@@ -28,6 +28,7 @@ def mpv_info(mpv: str | None) -> dict:
         return subprocess.run([mpv, "--no-config", *args], capture_output=True, text=True, encoding="utf-8",
                               errors="replace", timeout=60, check=False).stdout
 
+    folder = Path(mpv).parent
     lines = run("--version").splitlines()
     decoders = {ln.split()[0] for ln in run("--vd=help").splitlines()[1:] if ln.strip()}
     return {
@@ -36,7 +37,7 @@ def mpv_info(mpv: str | None) -> dict:
         "ffmpeg": next((ln.strip() for ln in lines if "FFmpeg version" in ln), None),
         "decoders": [d for d in ("h264", "hevc", "vp8", "vp9", "av1", "libdav1d", "prores", "mjpeg", "gif")
                      if d in decoders],
-        "files": sorted(p.name for p in Path(mpv).parent.iterdir()),
+        "files": sorted(p.name for p in folder.iterdir()) if folder.name == "anki_audio" else None,
     }
 
 

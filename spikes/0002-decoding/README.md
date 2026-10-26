@@ -15,3 +15,12 @@ $PY -I bench.py clips/long mpv --cycle 265 --frames 10800 h264_3min_2560.mp4
 ```
 
 Each line of output is the JSON result for one clip. The clips are git-ignored; `make_clips.py` makes them again.
+`probe.py` prints what the install carries (Qt's media backends and FFmpeg, the mpv in use and its decoders).
+
+Engines: `mpv`, `qt<rate>` (frames through the event loop), `qt<rate>d` (frames on Qt's decoding thread) and a `sw`
+suffix for Qt with hardware decoding off, e.g. `qt16dsw`.
+
+Off macOS, install Anki's packages in the Python that runs the scripts (`pip install "aqt[qt,audio]==26.9.2"`) and
+set `RADSCROLL_ANKI_PACKAGES=""`; `RADSCROLL_MPV` picks an mpv. The manual GitHub workflow
+[`spike-0002-decoding.yml`](../../.github/workflows/spike-0002-decoding.yml) runs the whole bench on Windows and
+Linux x64 runners (`gh workflow run spike-0002-decoding.yml`, optionally `-f clips_run=<run id>` to reuse clips).

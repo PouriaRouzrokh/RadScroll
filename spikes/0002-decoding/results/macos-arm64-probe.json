@@ -1,0 +1,39 @@
+{
+ "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+ "machine": "arm64",
+ "python": "3.13.5",
+ "qt": "6.11.2",
+ "qt_media_backends": [
+  "libdarwinmediaplugin.dylib",
+  "libffmpegmediaplugin.dylib"
+ ],
+ "qt_ffmpeg_libs": [
+  "libavcodec.61.dylib",
+  "libavformat.61.dylib",
+  "libavutil.59.dylib",
+  "libswresample.5.dylib",
+  "libswscale.8.dylib"
+ ],
+ "mpv": {
+  "path": "/Applications/Anki.app/Contents/Resources/app_packages/anki_audio/mpv",
+  "version": "mpv v0.41.0 Copyright \u00a9 2000-2025 mpv/MPlayer/mplayer2 projects",
+  "ffmpeg": "FFmpeg version: 8.1.2",
+  "decoders": [
+   "h264",
+   "hevc",
+   "vp8",
+   "vp9",
+   "av1",
+   "libdav1d",
+   "prores",
+   "mjpeg",
+   "gif"
+  ],
+  "files": [
+   "__init__.pyc",
+   "lame",
+   "libs",
+   "mpv"
+  ]
+ }
+}

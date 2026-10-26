@@ -1,0 +1,41 @@
+{
+ "platform": "Windows-2025Server-10.0.26100-SP0",
+ "machine": "AMD64",
+ "python": "3.13.16",
+ "qt": "6.11.2",
+ "qt_media_backends": [
+  "ffmpegmediaplugin.dll",
+  "windowsmediaplugin.dll"
+ ],
+ "qt_ffmpeg_libs": [
+  "avcodec-61.dll",
+  "avformat-61.dll",
+  "avutil-59.dll",
+  "swresample-5.dll",
+  "swscale-8.dll"
+ ],
+ "mpv": {
+  "path": "C:\\hostedtoolcache\\windows\\Python\\3.13.16\\x64\\Lib\\site-packages\\anki_audio\\mpv.exe",
+  "version": "mpv v0.41.0-dev-g41f6a6450 Copyright \u00a9 2000-2025 mpv/MPlayer/mplayer2 projects",
+  "ffmpeg": "FFmpeg version: f853d12",
+  "decoders": [
+   "h264",
+   "hevc",
+   "vp8",
+   "vp9",
+   "av1",
+   "libdav1d",
+   "prores",
+   "mjpeg",
+   "gif"
+  ],
+  "files": [
+   "__init__.py",
+   "__pycache__",
+   "lame.exe",
+   "lame_enc.dll",
+   "mpv.exe",
+   "vulkan-1.dll"
+  ]
+ }
+}

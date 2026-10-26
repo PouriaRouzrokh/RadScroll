@@ -1,0 +1,33 @@
+{
+ "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+ "machine": "x86_64",
+ "python": "3.13.16",
+ "qt": "6.11.2",
+ "qt_media_backends": [
+  "libffmpegmediaplugin.so"
+ ],
+ "qt_ffmpeg_libs": [
+  "libavcodec.so.61",
+  "libavformat.so.61",
+  "libavutil.so.59",
+  "libswresample.so.5",
+  "libswscale.so.8"
+ ],
+ "mpv": {
+  "path": "/usr/bin/mpv",
+  "version": "mpv 0.37.0 Copyright \u00a9 2000-2023 mpv/MPlayer/mplayer2 projects",
+  "ffmpeg": "FFmpeg version: 6.1.1-3ubuntu5",
+  "decoders": [
+   "h264",
+   "hevc",
+   "vp8",
+   "vp9",
+   "av1",
+   "libdav1d",
+   "prores",
+   "mjpeg",
+   "gif"
+  ],
+  "files": null
+ }
+}

@@ -16,8 +16,9 @@ this repository is public.
 
 Phase 0 spikes (PRD v1.4, plan v1.1). One launch, everything in it; no public 0.x releases. Each spike ends in a
 short decision record under `docs/decisions/`:
-- Spike 2, decoding: macOS measured (record 0002: the bundled mpv decodes everything exactly; Qt is the fallback).
-  Next: the same bench on Windows and Linux.
+- Spike 2, decoding: decided (record 0002). mpv where Anki ships it (macOS, Windows) or the user installed it
+  (Linux), else Qt, with frames handled on Qt's decoding thread. Real recordings and an in-Anki check stay open
+  for milestone 1.
 - Spike 1 (viewer delivery on phones), spike 3 (image I/O), spike 4 (minimum Anki): not started.
 
 No outreach to Radiopaedia: the playlist download is tried first, the link import stays behind a switch.
