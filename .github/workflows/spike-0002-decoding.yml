@@ -95,9 +95,9 @@ jobs:
       - { name: qt16 short, continue-on-error: true, timeout-minutes: 10, run: "$B clips qt16" }
       - { name: qt16 long H.264, continue-on-error: true, timeout-minutes: 15, run: "$B clips/long qt16 $LONG h264_3min_2560.mp4" }
       - { name: qt16 long HEVC, continue-on-error: true, timeout-minutes: 15, run: "$B clips/long qt16 $LONG hevc_3min_2560.mp4" }
-      - { name: qt16sw short, continue-on-error: true, timeout-minutes: 10, run: "$B clips qt16sw" }
-      - { name: qt16sw long H.264, continue-on-error: true, timeout-minutes: 15, run: "$B clips/long qt16sw $LONG h264_3min_2560.mp4" }
-      - { name: qt16sw long HEVC, continue-on-error: true, timeout-minutes: 15, run: "$B clips/long qt16sw $LONG hevc_3min_2560.mp4" }
+      - { name: qt16d short, continue-on-error: true, timeout-minutes: 10, run: "$B clips qt16d" }
+      - { name: qt16d long H.264, continue-on-error: true, timeout-minutes: 15, run: "$B clips/long qt16d $LONG h264_3min_2560.mp4" }
+      - { name: qt16d long HEVC, continue-on-error: true, timeout-minutes: 15, run: "$B clips/long qt16d $LONG hevc_3min_2560.mp4" }
 
       - name: Kernel memory kills (Linux)
         if: always() && runner.os == 'Linux'

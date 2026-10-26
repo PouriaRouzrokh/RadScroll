@@ -3,7 +3,8 @@
 Engines:
   mpv      the bundled anki_audio mpv in encoding mode, raw grayscale frames on a pipe
   qt<rate> QMediaPlayer + QVideoSink (Qt's FFmpeg backend) playing at <rate>x, e.g. qt16
-  qt<rate>sw the same with Qt's hardware decoding turned off, e.g. qt16sw
+  qt<rate>d  the same, with each frame handled on Qt's decoding thread (it waits for the reader), e.g. qt16d
+  ...sw      a Qt engine with hardware decoding turned off, e.g. qt16sw, qt16dsw
 
 Pass 1 decodes every frame at about 200 px wide in grayscale and reads each frame's index barcode.
 Pass 2 decodes a few chosen frames at full size and checks each one is the frame asked for.
@@ -19,6 +20,7 @@ a collection.
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -47,7 +49,7 @@ def find_mpv() -> str | None:
 
 MPV = find_mpv()
 
-from PyQt6.QtCore import QEventLoop, QTimer, QUrl  # noqa: E402
+from PyQt6.QtCore import QEventLoop, Qt, QTimer, QUrl  # noqa: E402
 from PyQt6.QtGui import QGuiApplication, QImage  # noqa: E402
 
 BITS = 12  # must match make_clips.py
@@ -109,13 +111,42 @@ def score(found: list[int], expected: int, cycle: int | None) -> dict:
     }
 
 
+MEMORY_LIMIT_MB = 4000  # the Qt engine stops a clip past this, so a runaway frame queue is reported, not fatal
+
+
+def _windows_memory() -> tuple[int, int]:
+    """(current, peak) working set of this process in bytes."""
+    import ctypes
+    from ctypes import wintypes
+
+    class Counters(ctypes.Structure):
+        _fields_ = [("cb", wintypes.DWORD), ("PageFaultCount", wintypes.DWORD),
+                    *((f, ctypes.c_size_t) for f in ("PeakWorkingSetSize", "WorkingSetSize", "QuotaPeakPagedPoolUsage",
+                                                      "QuotaPagedPoolUsage", "QuotaPeakNonPagedPoolUsage",
+                                                      "QuotaNonPagedPoolUsage", "PagefileUsage", "PeakPagefileUsage"))]
+
+    c = Counters(cb=ctypes.sizeof(Counters))
+    get = ctypes.windll.psapi.GetProcessMemoryInfo
+    get.argtypes = [wintypes.HANDLE, ctypes.POINTER(Counters), wintypes.DWORD]
+    get(ctypes.windll.kernel32.GetCurrentProcess(), ctypes.byref(c), c.cb)
+    return c.WorkingSetSize, c.PeakWorkingSetSize
+
+
+def memory_now_mb() -> int:
+    """Resident memory of this process now, in MB (on macOS, the peak so far)."""
+    if sys.platform == "win32":
+        return _windows_memory()[0] // 2**20
+    if sys.platform == "linux":
+        return int(Path("/proc/self/statm").read_text().split()[1]) * os.sysconf("SC_PAGE_SIZE") // 2**20
+    import resource
+    return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss // 2**20
+
+
 def peak_memory() -> dict:
-    """Peak resident memory so far, in MB, of this process (the Qt engine) and of its children (mpv). None on
-    Windows, which has no `resource` module."""
-    try:
-        import resource
-    except ImportError:
-        return {}
+    """Peak resident memory so far, in MB, of this process (the Qt engine) and, off Windows, of its children (mpv)."""
+    if sys.platform == "win32":
+        return {"peak_self_mb": _windows_memory()[1] // 2**20}
+    import resource
     unit = 1 if sys.platform == "darwin" else 1024  # ru_maxrss: bytes on macOS, KB on Linux
     return {f"peak_{who}_mb": round(resource.getrusage(r).ru_maxrss * unit / 2**20)
             for who, r in (("self", resource.RUSAGE_SELF), ("children", resource.RUSAGE_CHILDREN))}
@@ -177,7 +208,9 @@ def wait(ms: int) -> None:
     loop.exec()
 
 
-def run_qt(path: Path, reader: Reader, rate: float) -> dict:
+def run_qt(path: Path, reader: Reader, rate: float, direct: bool) -> dict:
+    """Pass 1 plays the clip at `rate`. Frames reach `on_frame` through the event loop (queued: the decoder never
+    waits, so frames pile up when the reader is slower), or with `direct` on Qt's decoding thread (it waits)."""
     from PyQt6.QtMultimedia import QMediaPlayer, QVideoSink
 
     meta: dict = {}
@@ -202,6 +235,10 @@ def run_qt(path: Path, reader: Reader, rate: float) -> dict:
             if turned:
                 reader.detect(g, w, h)
         found.append(reader.read(g, w, h))
+        if len(found) % 60 == 0 and memory_now_mb() > MEMORY_LIMIT_MB:
+            meta["stopped"] = f"memory over {MEMORY_LIMIT_MB} MB"
+            player.stop()
+            loop.quit()
         starts.append(fr.startTime())
 
     def on_status(st) -> None:
@@ -213,7 +250,8 @@ def run_qt(path: Path, reader: Reader, rate: float) -> dict:
         meta["error"] = msg
         loop.quit()
 
-    sink.videoFrameChanged.connect(on_frame)
+    sink.videoFrameChanged.connect(on_frame, Qt.ConnectionType.DirectConnection if direct else
+                                   Qt.ConnectionType.AutoConnection)
     player.mediaStatusChanged.connect(on_status)
     player.errorOccurred.connect(on_error)
     player.setSource(QUrl.fromLocalFile(str(path)))
@@ -269,7 +307,10 @@ def main() -> None:
     args = ap.parse_args()
     if args.engine == "mpv" and not MPV:
         sys.exit("no mpv: Anki ships none on this platform and none is on PATH")
-    if args.engine.endswith("sw"):  # Qt with hardware decoding off: an empty list of hardware device types
+    qt = re.fullmatch(r"qt(\d+)(d?)(sw)?", args.engine)
+    if args.engine != "mpv" and not qt:
+        sys.exit(f"unknown engine {args.engine}")
+    if qt and qt[3]:  # Qt with hardware decoding off: an empty list of hardware device types
         os.environ["QT_FFMPEG_DECODING_HW_DEVICE_TYPES"] = ","
 
     truth = None if args.cycle else json.loads((args.clips / "truth.json").read_text())
@@ -283,7 +324,7 @@ def main() -> None:
             if args.engine == "mpv":
                 meta = run_mpv(args.clips / name, reader)
             else:
-                meta = run_qt(args.clips / name, reader, float(args.engine.removeprefix("qt").removesuffix("sw") or 1))
+                meta = run_qt(args.clips / name, reader, float(qt[1]), direct=bool(qt[2]))
             found = meta.pop("found")
             row.update(meta)
             row.update(score(found, expected, args.cycle))
