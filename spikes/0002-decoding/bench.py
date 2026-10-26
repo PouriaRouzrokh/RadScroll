@@ -3,6 +3,7 @@
 Engines:
   mpv      the bundled anki_audio mpv in encoding mode, raw grayscale frames on a pipe
   qt<rate> QMediaPlayer + QVideoSink (Qt's FFmpeg backend) playing at <rate>x, e.g. qt16
+  qt<rate>sw the same with Qt's hardware decoding turned off, e.g. qt16sw
 
 Pass 1 decodes every frame at about 200 px wide in grayscale and reads each frame's index barcode.
 Pass 2 decodes a few chosen frames at full size and checks each one is the frame asked for.
@@ -108,13 +109,26 @@ def score(found: list[int], expected: int, cycle: int | None) -> dict:
     }
 
 
+def peak_memory() -> dict:
+    """Peak resident memory so far, in MB, of this process (the Qt engine) and of its children (mpv). None on
+    Windows, which has no `resource` module."""
+    try:
+        import resource
+    except ImportError:
+        return {}
+    unit = 1 if sys.platform == "darwin" else 1024  # ru_maxrss: bytes on macOS, KB on Linux
+    return {f"peak_{who}_mb": round(resource.getrusage(r).ru_maxrss * unit / 2**20)
+            for who, r in (("self", resource.RUSAGE_SELF), ("children", resource.RUSAGE_CHILDREN))}
+
+
 # ---------------------------------------------------------------- mpv engine
 
 def mpv_probe(path: Path) -> dict:
     """Display size (after autorotate) and the rotation tag."""
     msg = "RSPROBE ${video-out-params/dw} ${video-out-params/dh} ${video-params/rotate}"
     r = subprocess.run([MPV, "--no-config", "--vo=null", "--ao=null", "--frames=1", f"--term-playing-msg={msg}",
-                        str(path)], capture_output=True, text=True, timeout=60, check=False)
+                        str(path)], capture_output=True, text=True, encoding="utf-8",
+                       errors="replace", timeout=60, check=False)
     line = next((ln for ln in r.stdout.splitlines() if ln.startswith("RSPROBE ")), "")
     parts = line.split()[1:]
     if len(parts) != 3:
@@ -255,6 +269,8 @@ def main() -> None:
     args = ap.parse_args()
     if args.engine == "mpv" and not MPV:
         sys.exit("no mpv: Anki ships none on this platform and none is on PATH")
+    if args.engine.endswith("sw"):  # Qt with hardware decoding off: an empty list of hardware device types
+        os.environ["QT_FFMPEG_DECODING_HW_DEVICE_TYPES"] = ","
 
     truth = None if args.cycle else json.loads((args.clips / "truth.json").read_text())
     expected = args.frames if args.cycle else truth["frames"]
@@ -267,11 +283,12 @@ def main() -> None:
             if args.engine == "mpv":
                 meta = run_mpv(args.clips / name, reader)
             else:
-                meta = run_qt(args.clips / name, reader, float(args.engine.removeprefix("qt") or 1))
+                meta = run_qt(args.clips / name, reader, float(args.engine.removeprefix("qt").removesuffix("sw") or 1))
             found = meta.pop("found")
             row.update(meta)
             row.update(score(found, expected, args.cycle))
             row["pass2_exact"] = f"{sum(p['got'] == p['want'] for p in meta['pass2'])}/{len(meta['pass2'])}"
+            row.update(peak_memory())
         except Exception as e:  # noqa: BLE001 - a spike reports a failure and moves on
             row["exception"] = repr(e)
         print(json.dumps(row), flush=True)

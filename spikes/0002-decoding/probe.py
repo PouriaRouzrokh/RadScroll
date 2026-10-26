@@ -23,12 +23,19 @@ from PyQt6.QtCore import QLibraryInfo, qVersion  # noqa: E402
 def mpv_info(mpv: str | None) -> dict:
     if not mpv:
         return {"path": None}
-    out = subprocess.run([mpv, "--no-config", "--version"], capture_output=True, text=True, timeout=60, check=False)
-    lines = out.stdout.splitlines()
+
+    def run(*args: str) -> str:
+        return subprocess.run([mpv, "--no-config", *args], capture_output=True, text=True, encoding="utf-8",
+                              errors="replace", timeout=60, check=False).stdout
+
+    lines = run("--version").splitlines()
+    decoders = {ln.split()[0] for ln in run("--vd=help").splitlines()[1:] if ln.strip()}
     return {
         "path": mpv,
-        "version": lines[0] if lines else out.stderr[-200:],
+        "version": lines[0] if lines else None,
         "ffmpeg": next((ln.strip() for ln in lines if "FFmpeg version" in ln), None),
+        "decoders": [d for d in ("h264", "hevc", "vp8", "vp9", "av1", "libdav1d", "prores", "mjpeg", "gif")
+                     if d in decoders],
         "files": sorted(p.name for p in Path(mpv).parent.iterdir()),
     }
 
