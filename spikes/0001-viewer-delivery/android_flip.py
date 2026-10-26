@@ -20,18 +20,40 @@ import subprocess
 import sys
 import time
 import xml.etree.ElementTree as ET
+from pathlib import Path
 
 ADB = os.environ.get("ADB", "/opt/homebrew/share/android-commandlinetools/platform-tools/adb")
 BADGE = re.compile(r"^(RAN ·|NOT RUN ·|LOAD ERROR ·)")
 SLICE = re.compile(r"^(\d+) / 12$")
+CARD = re.compile(r" · card \d\d / 20$")
+HERE = Path(__file__).resolve().parent
 
 
 def adb(*args: str) -> str:
     return subprocess.run([ADB, *args], capture_output=True, text=True, check=True).stdout
 
 
+def ocr() -> list[tuple[str, tuple[int, int]]]:
+    """Text read from a screenshot by macOS's Vision framework (ocr.swift, built on first use)."""
+    tool = HERE / ".build" / "rs-ocr"
+    if not tool.exists():
+        tool.parent.mkdir(exist_ok=True)
+        subprocess.run(["swiftc", "-O", str(HERE / "ocr.swift"), "-o", str(tool)], check=True)
+    png = HERE / ".build" / "screen.png"
+    png.write_bytes(subprocess.run([ADB, "exec-out", "screencap", "-p"], capture_output=True, check=True).stdout)
+    w, h = 1080, 2400
+    out = []
+    for line in subprocess.run([str(tool), str(png)], capture_output=True, text=True, check=True).stdout.splitlines():
+        x, y, text = line.split("\t", 2)
+        out.append((text.replace("•", "·"), (int(float(x) * w), int(float(y) * h))))
+    return out
+
+
 def screen() -> list[tuple[str, tuple[int, int]]]:
-    """(text or content-desc, centre) for every node on screen."""
+    """(text, centre) for every node in the accessibility tree, then every line OCR reads on the screenshot.
+
+    The old study screen shows the card's text in the accessibility tree; the new one doesn't, so OCR covers it.
+    """
     adb("shell", "uiautomator", "dump", "/sdcard/ui.xml")
     root = ET.fromstring(adb("shell", "cat", "/sdcard/ui.xml"))
     out = []
@@ -40,6 +62,9 @@ def screen() -> list[tuple[str, tuple[int, int]]]:
         x1, y1, x2, y2 = map(int, re.findall(r"\d+", n.get("bounds", "[0,0][0,0]")))
         if text:
             out.append((text, ((x1 + x2) // 2, (y1 + y2) // 2)))
+    on_card = find(out, "Show answer") or find(out, re.compile("Again$"))
+    if on_card and not any(BADGE.search(t) for t, _ in out):
+        out += [n for n in ocr() if BADGE.search(n[0]) or SLICE.search(n[0]) or CARD.search(n[0])]
     return out
 
 
@@ -64,17 +89,17 @@ def read_side() -> dict:
         badges2 = [t for t, _ in nodes if BADGE.search(t)]
         late = badges2 != badges and all(b.startswith("RAN") for b in badges2)
         badges = badges2
-    label = find(nodes, re.compile(r" · card \d\d / 20$"))
+    label = find(nodes, CARD)
     return {"label": label[0] if label else None, "badges": badges, "late": late, "nodes": nodes}
 
 
 def drag_scrolls(nodes) -> bool | None:
     """Drag down on the stack: True if the slice number moved, None if no stack was found."""
     at = find(nodes, SLICE)
-    img = find(nodes, re.compile(r"^rs-spike1-s\d\d"))
-    if not at or not img:
+    if not at:
         return None
-    x, y = img[1]
+    img = find(nodes, re.compile(r"^rs-spike1-s\d\d"))
+    x, y = img[1] if img else (540, at[1][1] + 300)  # OCR sees only the slice counter, top right of the stack
     adb("shell", "input", "swipe", str(x), str(y - 100), str(x), str(y + 150), "400")
     time.sleep(0.4)
     after = find(screen(), SLICE)
@@ -103,7 +128,7 @@ def run_deck(label: str, deck: str) -> None:
         a = read_side()
         print(json.dumps({"screen": label, "deck": deck, "card": a["label"], "side": "a", "badges": a["badges"],
                           "late": a["late"]}), flush=True)
-        easy = find(a["nodes"], re.compile(r"^Easy"))
+        easy = find(a["nodes"], re.compile(r"Easy$"))
         tap(easy[1])
     deck_list(deck)
 
