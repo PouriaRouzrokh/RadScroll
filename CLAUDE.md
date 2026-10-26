@@ -14,10 +14,13 @@ this repository is public.
 
 ## Status
 
-Planning (PRD v1.4, plan v1.1, 2026-10-25). One launch, everything in it; no public 0.x releases. Next: Phase 0 spikes (viewer delivery on AnkiMobile and AnkiDroid, the
-decoding engine with what Anki already ships first, image I/O, the minimum Anki version), each ending in a short
-decision record under `docs/decisions/`. No outreach to Radiopaedia: the playlist download is tried first, the
-link import stays behind a switch.
+Phase 0 spikes (PRD v1.4, plan v1.1). One launch, everything in it; no public 0.x releases. Each spike ends in a
+short decision record under `docs/decisions/`:
+- Spike 2, decoding: macOS measured (record 0002: the bundled mpv decodes everything exactly; Qt is the fallback).
+  Next: the same bench on Windows and Linux.
+- Spike 1 (viewer delivery on phones), spike 3 (image I/O), spike 4 (minimum Anki): not started.
+
+No outreach to Radiopaedia: the playlist download is tried first, the link import stays behind a switch.
 
 ## Rules
 
