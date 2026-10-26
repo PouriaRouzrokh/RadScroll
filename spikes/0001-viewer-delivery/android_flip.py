@@ -58,7 +58,7 @@ def screen() -> list[tuple[str, tuple[int, int]]]:
     root = ET.fromstring(adb("shell", "cat", "/sdcard/ui.xml"))
     out = []
     for n in root.iter("node"):
-        text = n.get("text") or n.get("content-desc") or ""
+        text = re.sub("[\u2066-\u2069]", "", n.get("text") or n.get("content-desc") or "")  # bidi isolates
         x1, y1, x2, y2 = map(int, re.findall(r"\d+", n.get("bounds", "[0,0][0,0]")))
         if text:
             out.append((text, ((x1 + x2) // 2, (y1 + y2) // 2)))
@@ -169,8 +169,12 @@ def import_apkg(apkg: str, presets: bool) -> None:
     wait_tap("More options")
     wait_tap("Import")
     wait_tap(re.compile(r"^Deck package"))
-    wait_tap("Show roots")
-    wait_tap("Downloads")
+    for attempt in range(3):  # the picker's side drawer sometimes misses a tap while it opens
+        wait_tap("Show roots")
+        wait_tap("Downloads")
+        time.sleep(2)
+        if find(screen(), os.path.basename(apkg)):
+            break
     wait_tap(os.path.basename(apkg))
     wait_tap("Add")
     if presets:

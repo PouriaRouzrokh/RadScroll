@@ -23,6 +23,11 @@ inside the templates, on desktop, AnkiDroid (old and new study screen) and AnkiM
 - `desktop_driver/`: an add-on for the sandbox only; reviews every spike deck in Anki desktop and logs each badge.
 - `android_flip.py`: drives AnkiDroid in the emulator through adb (wipe, import, pick the study screen, then flip
   every card, read each badge from the accessibility tree and drag once on the stack).
+- `ocr.swift`: prints the text macOS's Vision framework reads in a screenshot; the driver uses it when Android's
+  accessibility tree doesn't hold the card's text (AnkiDroid's new study screen, at first).
+- `sync_up.py`: uploads the sandbox profile to the separate test AnkiWeb account, media included. The login comes
+  from the environment and is never written to disk.
+- `summarize.py`: turns the result logs into the table in the record.
 - `results/`: one JSON line per card side.
 
 The slices are numbered rings drawn with Qt: no anatomy, no patient data.
@@ -45,5 +50,13 @@ $PY -I android_flip.py --reset ~/RadScrollSandbox/spike1-base/rs-spike1-v1.apkg 
 $PY -I android_flip.py --reset ~/RadScrollSandbox/spike1-base/rs-spike1-v1.apkg new new "A inline" "B src" "C loader"
 ```
 
-AnkiMobile can't be driven from a computer: the cards reach the iPad through a separate test AnkiWeb account
-(`make_base.py` on `spike1-base`, open it with `Anki -b`, log in, sync) and are flipped by hand.
+Sync and AnkiMobile:
+
+```sh
+$PY -I make_base.py ~/RadScrollSandbox/spike1-base
+RADSCROLL_TEST_USER=... RADSCROLL_TEST_PW=... $PY -I sync_up.py ~/RadScrollSandbox/spike1-base
+```
+
+AnkiMobile can't be driven from a computer: the iPad logs in to the test account, downloads, and the cards are
+flipped by hand. Update test on AnkiDroid: `android_flip.py --update <v1.apkg> <v2.apkg> old|new <deck> ...`, with
+the v2 package built by `build_deck.py <copy of the profile> v2`.
