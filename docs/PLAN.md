@@ -141,7 +141,7 @@ interfaces, never a fork of the shared pieces.
 
 | Piece | Source today | Port |
 |---|---|---|
-| Viewer | `web/src/components/stacks/viewer.ts` (v19) + `styles.ts` + `build-stack-viewer.mjs` | Copied as-is into `viewer/`; the site then imports the package from here. Fixes found in review (listener lifetime, re-run safety) land here first |
+| Viewer | `web/src/components/stacks/viewer.ts` (v19) + `styles.ts` + `build-stack-viewer.mjs` | Copied as-is into `viewer/` (read-only copy; the site is not changed). Fixes found in review (listener lifetime, re-run safety) are made here; the site imports the package from here only after v1.0 |
 | Board format | written / parsed in `stack_board.py`, the editor's `ankiHtml.ts` | A JSON schema + fixtures in `schema/`; one writer and one parser in the add-on; the parser keeps unknown attributes |
 | Clip → slices | `stack_video.py` (numpy + ffmpeg) | The rules (runs, repeats, blur, trim, re-assembly) rewritten over the engine from record 0002: Qt frames, Python arithmetic on ≈ 200 px grayscale, chosen frames decoded once at full size |
 | Margin, layout, encoding | `stack_board.py`, `pack.ts` (same height) | Pure arithmetic: port with the fixtures; WebP through `QImage` |
@@ -235,6 +235,10 @@ ones that would hurt strangers:
 
 ## 8. Working rules for this repo
 
+- **Kept apart from the author's own setup until v1.0** (Pouria, 2026-10-26). His site, his Anki collection and
+  the cards on his laptop, phone and tablet are not changed. The site's code is read, never edited; review
+  findings are fixed in this repo. Every experiment runs in its own Anki base folder (`Anki -b <folder>`) or a
+  plain Python process, with its own test sync account; nothing syncs to his own collection.
 - One decision record per design question before the code for it; the record carries the measurements.
 - Commit and push to `main` often; every milestone ends with a tagged internal build and a short changelog in
   plain words; the first public release is v1.0.
