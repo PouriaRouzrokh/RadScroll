@@ -3,7 +3,9 @@
     python3.13 -I android_flip.py [--reset <apkg> old|new] <label> <deck> ...
     e.g. android_flip.py --reset rs-spike1-v1.apkg new new "A inline" "B src" "C loader"
 
-With --reset it first wipes AnkiDroid, imports the package and picks the old or new study screen.
+With --reset it first wipes AnkiDroid, imports the package and picks the old or new study screen. The update test:
+    android_flip.py --update rs-spike1-v1.apkg rs-spike1-v2.apkg old|new <deck> ...
+opens each deck's first card on v1, imports the v2 package over it, then flips every card (all should say v2).
 
 Starts from AnkiDroid's deck list with the "RS spike 1" decks imported. For every card it reads the screen through
 the accessibility tree (uiautomator, which sees the card web view's text), drags once on the stack to check that a
@@ -80,13 +82,19 @@ def drag_scrolls(nodes) -> bool | None:
 
 
 def run_deck(label: str, deck: str) -> None:
-    tap(find(screen(), deck)[1])
-    time.sleep(3)
+    deck_list(deck)
+    wait_tap(deck)
+    time.sleep(2)
     for _ in range(25):  # 20 cards, with room to notice a loop
         time.sleep(1)
         q = read_side()
         if not q["label"] and not q["badges"]:
-            break  # the deck is finished
+            if not find(q["nodes"], "Show answer") and find(q["nodes"], deck):
+                break  # back on the deck list: the deck is finished
+            # a study screen with no card text: record it, it may be a viewer-side failure or a blank page
+            print(json.dumps({"screen": label, "deck": deck, "card": None, "side": "q", "badges": [],
+                              "unknown": [t for t, _ in q["nodes"]][:30]}), flush=True)
+            raise SystemExit(f"{deck}: a screen with no card on it")
         scrolled = drag_scrolls(q["nodes"])
         print(json.dumps({"screen": label, "deck": deck, "card": q["label"], "side": "q", "badges": q["badges"],
                           "late": q["late"], "scrolled": scrolled}), flush=True)
@@ -97,8 +105,20 @@ def run_deck(label: str, deck: str) -> None:
                           "late": a["late"]}), flush=True)
         easy = find(a["nodes"], re.compile(r"^Easy"))
         tap(easy[1])
-    adb("shell", "input", "keyevent", "KEYCODE_BACK")
-    time.sleep(2)
+    deck_list(deck)
+
+
+def deck_list(deck: str) -> None:
+    """Get back to the deck list (AnkiDroid may already be there when a deck runs out), restarting if it closed."""
+    for _ in range(3):
+        nodes = screen()
+        if find(nodes, deck):
+            return
+        if find(nodes, "Home"):  # one Back too many closed the app
+            adb("shell", "monkey", "-p", "com.ichi2.anki", "-c", "android.intent.category.LAUNCHER", "1")
+        else:
+            adb("shell", "input", "keyevent", "KEYCODE_BACK")
+        time.sleep(2)
 
 
 def wait_tap(pattern, timeout: float = 15, pick=lambda hits: hits[0]) -> None:
@@ -118,17 +138,9 @@ def wait_tap(pattern, timeout: float = 15, pick=lambda hits: hits[0]) -> None:
     raise SystemExit(f"not on screen: {pattern}")
 
 
-def reset(apkg: str, new_screen: bool) -> None:
-    """Wipe AnkiDroid (app data and its collection folder), import `apkg` with its deck presets, pick the screen."""
-    pkg = "com.ichi2.anki"
-    adb("shell", "pm", "clear", pkg)
-    adb("shell", "rm", "-rf", "/sdcard/AnkiDroid")
-    adb("shell", "appops", "set", pkg, "MANAGE_EXTERNAL_STORAGE", "allow")
+def import_apkg(apkg: str, presets: bool) -> None:
+    """From the deck list: import `apkg` through AnkiDroid's own menu and file picker, and come back."""
     adb("push", apkg, "/sdcard/Download/")
-    adb("shell", "monkey", "-p", pkg, "-c", "android.intent.category.LAUNCHER", "1")
-    wait_tap("Get started")
-    adb("shell", "am", "force-stop", pkg)  # the permission screen only notices the grant on a fresh start
-    adb("shell", "monkey", "-p", pkg, "-c", "android.intent.category.LAUNCHER", "1")
     wait_tap("More options")
     wait_tap("Import")
     wait_tap(re.compile(r"^Deck package"))
@@ -136,11 +148,41 @@ def reset(apkg: str, new_screen: bool) -> None:
     wait_tap("Downloads")
     wait_tap(os.path.basename(apkg))
     wait_tap("Add")
-    wait_tap("Import any deck presets", pick=lambda hits: hits[-1])  # the switch, not its label
+    if presets:
+        wait_tap("Import any deck presets", pick=lambda hits: hits[-1])  # the switch, not its label
     wait_tap("Import", pick=lambda hits: hits[-1])  # the button, not the title
-    wait_tap(re.compile(r"new notes imported"), timeout=30, pick=lambda hits: None)
+    wait_tap(re.compile(r"notes found in file"), timeout=30, pick=lambda hits: None)
     adb("shell", "input", "keyevent", "KEYCODE_BACK")
     time.sleep(2)
+
+
+def update_test(v1: str, v2: str, screen_name: str, decks: list[str]) -> None:
+    """Load probe v1 on every deck's first card, import the v2 package over it, then flip every card."""
+    reset(v1, new_screen=screen_name == "new")
+    for deck in decks:
+        wait_tap(deck)
+        time.sleep(3)
+        q = read_side()
+        print(json.dumps({"screen": screen_name + " before update", "deck": deck, "card": q["label"], "side": "q",
+                          "badges": q["badges"], "late": q["late"]}), flush=True)
+        adb("shell", "input", "keyevent", "KEYCODE_BACK")
+        time.sleep(2)
+    import_apkg(v2, presets=False)
+    for deck in decks:
+        run_deck(screen_name + " after update", deck)
+
+
+def reset(apkg: str, new_screen: bool) -> None:
+    """Wipe AnkiDroid (app data and its collection folder), import `apkg` with its deck presets, pick the screen."""
+    pkg = "com.ichi2.anki"
+    adb("shell", "pm", "clear", pkg)
+    adb("shell", "rm", "-rf", "/sdcard/AnkiDroid")
+    adb("shell", "appops", "set", pkg, "MANAGE_EXTERNAL_STORAGE", "allow")
+    adb("shell", "monkey", "-p", pkg, "-c", "android.intent.category.LAUNCHER", "1")
+    wait_tap("Get started")
+    adb("shell", "am", "force-stop", pkg)  # the permission screen only notices the grant on a fresh start
+    adb("shell", "monkey", "-p", pkg, "-c", "android.intent.category.LAUNCHER", "1")
+    import_apkg(apkg, presets=True)
     if new_screen:
         wait_tap("Open drawer")
         wait_tap("Settings")
@@ -154,6 +196,9 @@ def reset(apkg: str, new_screen: bool) -> None:
 
 if __name__ == "__main__":
     args = sys.argv[1:]
+    if len(args) >= 4 and args[0] == "--update":
+        update_test(args[1], args[2], args[3], args[4:])
+        raise SystemExit
     if len(args) >= 2 and args[0] == "--reset":
         reset(args[1], new_screen=args[2] == "new")
         args = args[2:]
