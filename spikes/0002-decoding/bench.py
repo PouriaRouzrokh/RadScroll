@@ -17,15 +17,34 @@ a collection.
 
 import argparse
 import json
+import os
+import shutil
 import subprocess
 import sys
 import time
 from itertools import pairwise
 from pathlib import Path
 
-ANKI_PACKAGES = "/Applications/Anki.app/Contents/Resources/app_packages"
-sys.path.insert(0, ANKI_PACKAGES)
-MPV = f"{ANKI_PACKAGES}/anki_audio/mpv"
+# Anki's packages: the macOS app bundle by default. Elsewhere, point RADSCROLL_ANKI_PACKAGES at a folder holding
+# them, or install Anki's pinned packages in the running Python and set it to "" (the CI workflow does this).
+ANKI_PACKAGES = os.environ.get("RADSCROLL_ANKI_PACKAGES", "/Applications/Anki.app/Contents/Resources/app_packages")
+if ANKI_PACKAGES:
+    sys.path.insert(0, ANKI_PACKAGES)
+
+
+def find_mpv() -> str | None:
+    """Anki's bundled mpv (macOS, Windows), else RADSCROLL_MPV, else an mpv on PATH (Linux has no bundled one)."""
+    if path := os.environ.get("RADSCROLL_MPV"):
+        return path
+    try:
+        import anki_audio
+    except ImportError:
+        return shutil.which("mpv")
+    folder = Path(anki_audio.__file__).parent
+    return next((str(p) for p in (folder / "mpv.exe", folder / "mpv") if p.is_file()), None)
+
+
+MPV = find_mpv()
 
 from PyQt6.QtCore import QEventLoop, QTimer, QUrl  # noqa: E402
 from PyQt6.QtGui import QGuiApplication, QImage  # noqa: E402
@@ -234,6 +253,8 @@ def main() -> None:
     ap.add_argument("--cycle", type=int, help="the clip loops a source of this many frames")
     ap.add_argument("--frames", type=int, help="frames in a looped clip")
     args = ap.parse_args()
+    if args.engine == "mpv" and not MPV:
+        sys.exit("no mpv: Anki ships none on this platform and none is on PATH")
 
     truth = None if args.cycle else json.loads((args.clips / "truth.json").read_text())
     expected = args.frames if args.cycle else truth["frames"]

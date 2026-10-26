@@ -12,13 +12,15 @@ loop the 60 fps clip, for speed; the bench reads them with --cycle 265 --frames 
 
 import json
 import math
+import os
 import random
 import subprocess
 import sys
 from pathlib import Path
 
-ANKI_PACKAGES = "/Applications/Anki.app/Contents/Resources/app_packages"
-sys.path.insert(0, ANKI_PACKAGES)
+ANKI_PACKAGES = os.environ.get("RADSCROLL_ANKI_PACKAGES", "/Applications/Anki.app/Contents/Resources/app_packages")
+if ANKI_PACKAGES:  # "" when Anki's packages are installed in the running Python (see bench.py)
+    sys.path.insert(0, ANKI_PACKAGES)
 
 from PyQt6.QtCore import QPointF, QRectF, Qt  # noqa: E402
 from PyQt6.QtGui import QColor, QFont, QGuiApplication, QImage, QPainter, QRadialGradient  # noqa: E402
