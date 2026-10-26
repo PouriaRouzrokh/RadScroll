@@ -19,7 +19,9 @@ short decision record under `docs/decisions/`:
 - Spike 2, decoding: decided (record 0002). mpv where Anki ships it (macOS, Windows) or the user installed it
   (Linux), else Qt, with frames handled on Qt's decoding thread. Real recordings and an in-Anki check stay open
   for milestone 1.
-- Spike 1 (viewer delivery on phones), spike 3 (image I/O), spike 4 (minimum Anki): not started.
+- Spike 1, viewer delivery: open (record 0001). Desktop and AnkiDroid (both study screens, and a v1 → v2 update)
+  ran every delivery with no failure; leaning to the inline block. AnkiMobile on the iPad is left.
+- Spike 3 (image I/O), spike 4 (minimum Anki): not started.
 
 No outreach to Radiopaedia: the playlist download is tried first, the link import stays behind a switch.
 
